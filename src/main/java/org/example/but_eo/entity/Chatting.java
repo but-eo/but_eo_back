@@ -31,4 +31,6 @@ public class Chatting {
 
     @ManyToMany(mappedBy = "chattings")
     private Set<Users> users = new HashSet<>();
+    
+    //TODO: 채팅 메세지 테이블 연결
 }

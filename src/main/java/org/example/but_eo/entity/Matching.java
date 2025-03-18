@@ -1,10 +1,19 @@
 package org.example.but_eo.entity;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.internal.build.AllowNonPortable;
 
-public class Match {
+@NoArgsConstructor
+@AllowNonPortable
+@Entity
+@Getter
+@Setter
+public class Matching {
 
     @Id
     private String match_Id;
