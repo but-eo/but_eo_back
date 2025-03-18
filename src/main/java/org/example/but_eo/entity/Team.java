@@ -3,17 +3,14 @@ package org.example.but_eo.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @NoArgsConstructor
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 public class Team {

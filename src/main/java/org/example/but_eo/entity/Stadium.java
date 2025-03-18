@@ -9,7 +9,7 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class Stadium {
 
     @Id

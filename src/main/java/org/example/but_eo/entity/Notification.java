@@ -32,6 +32,7 @@ public class Notification {
 
     private LocalDateTime notification_date; //알람 전송일
 
+    //TODO : 테이블 연결
     @ManyToOne
     private Users user; //유저 외래키
 }

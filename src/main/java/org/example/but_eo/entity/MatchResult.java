@@ -27,6 +27,7 @@ public class MatchResult {
 
     private LocalDate match_date; // 시합 일정
 
+    //TODO : 팀 테이블과 연결
     @ManyToOne
     private Team winner_id;
 
