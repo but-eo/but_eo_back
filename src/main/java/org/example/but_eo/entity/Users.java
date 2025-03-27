@@ -8,7 +8,9 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -19,15 +21,27 @@ import java.util.Set;
 public class Users {
 
     @Id
-    private String id; //해시256
+    @Column(length = 64, nullable = false)
+    private String user_hash_id; //해시256
 
-    private enum State{
+    public enum State{
         ACTIVE, DELETED_WAIT
     }; //상태 -> 활성화, 삭제대기
 
+    public enum Division{
+        USER, ADMIN, BUSINESS
+    }; //유저, 관리자, 사업자
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private State state;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Division division;
+
     @Column(length = 20, nullable = false)
     private String name; //닉네임
-
 
     @Column(length = 80, unique = true, nullable = false)
     private String email;
@@ -45,6 +59,21 @@ public class Users {
     private String region; //지역
 
     @Column(nullable = true)
+    private int badminton_score;
+
+    @Column(nullable = true)
+    private int tennis_score;
+
+    @Column(nullable = true)
+    private int table_tennis_score;
+
+    @Column(nullable = true)
+    private int bowling_Score;
+
+    @Column(nullable = false)
+    private boolean gender; //성별 0 : 남자, 1: 여자
+
+    @Column(nullable = true)
     private LocalDate birth;
 
     @Column(nullable = true)
@@ -53,26 +82,21 @@ public class Users {
     @Column(nullable = false)
     private LocalDateTime created_at; //계정 생성일
 
-    @Column(nullable = false)
-    private boolean gender; //성별 0 : 남자, 1: 여자
+    @OneToMany(mappedBy = "user")
+    private List<Board> board_List = new ArrayList<>();
 
-    private enum Division{
-        USER, ADMIN, BUSINESS
-    }; //유저, 관리자, 사업자
+    @OneToMany(mappedBy = "user")
+    private List<Comment> comment_List = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "chatting_user", //매핑 테이블 이름
-            joinColumns = @JoinColumn(name = "user_id"), //유저 fk
-            inverseJoinColumns = @JoinColumn(name = "chatting_id") //채팅 fk
-    )
-    private Set<Chatting> chattings = new HashSet<>();;
+    @OneToMany(mappedBy = "sender_user")
+    private List<Notification> sender_List = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "team_member",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "team_id")
-    )
-    private Set<Team> teams = new HashSet<>();;
+    @OneToMany(mappedBy = "receiver_user")
+    private List<Notification> receiver_List = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Chatting_Member> chating_List = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private  List<Team_Member> team_Member_List = new ArrayList<>();
 }
