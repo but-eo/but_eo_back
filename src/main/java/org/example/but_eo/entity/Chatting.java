@@ -1,17 +1,14 @@
 package org.example.but_eo.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -21,16 +18,25 @@ import java.util.Set;
 public class Chatting {
 
     @Id
-    private String chat_Id;
+    @Column(length = 64, nullable = false)
+    private String chat_id;
 
-    private String state;
+    public enum State {
+        PUBLIC, PRIVATE, DELETE
+    }
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private State state;
+
+    @Column(length = 50, nullable = false)
     private String title;
 
+    @Column(nullable = false)
     private LocalDateTime created_at;
 
-    @ManyToMany(mappedBy = "chattings")
-    private Set<Users> users = new HashSet<>();
+    @OneToMany(mappedBy = "chatting")
+    private List<Chatting_Member> memberList = new ArrayList<>();
     
     //TODO: 채팅 메세지 테이블 연결
 }

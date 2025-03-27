@@ -1,12 +1,14 @@
 package org.example.but_eo.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.internal.build.AllowNonPortable;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor
 @AllowNonPortable
@@ -16,23 +18,60 @@ import org.hibernate.internal.build.AllowNonPortable;
 public class Matching {
 
     @Id
-    private String match_Id;
+    @Column(length = 64, nullable = false)
+    private String match_id;
 
-    @Column(length = 50)
-    private String match_Name;
+    @ManyToOne
+    @JoinColumn(name = "stadium_id", nullable = true)
+    private Stadium stadium;
 
-    @Column(length = 50)
-    private String match_Region;
+    @ManyToOne
+    @JoinColumn(name = "team_id", nullable = false)
+    private Team team;
 
-    @Column(length = 100)
-    private String match_Date; //시작~끝으로 잡을지 한 문장으로 받을지
+    @ManyToOne
+    @JoinColumn(name = "Challenger", nullable = true)
+    private Team Challenger_Team;
 
-    @Column(length = 50)
-    private String match_location;
+    @ManyToOne
+    @JoinColumn(name = "winner_id", nullable = true)
+    private Team winner_Team;
 
-    @Column(length = 50, nullable = true) //널값 허용
-    private String match_host; //주최
+    @ManyToOne
+    @JoinColumn(name = "loser_id", nullable = true)
+    private Team loser_Team;
 
-    @Column(length = 50, nullable = true) //널값 허용
-    private String match_organize; //주관
+    public enum State {
+        SUCCESS ,COMPLETE, CANCEL, WAITING
+    }
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private State state;
+
+    @Column(nullable = false)
+    private LocalDateTime match_date;
+
+    public enum Match_Type {
+        SOCCER, FUTSAL, BASEBALL, BASKETBALL, BADMINTON, TENNIS, TABLE_TENNIS, BOWLING
+    } //축구, 풋살, 야구, 농구, 배드민턴, 테니스, 탁구, 볼링
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Match_Type match_type;
+
+    @Column(nullable = false)
+    private Boolean loan;
+
+    @Column(nullable = true)
+    private int winner_score;
+
+    @Column(nullable = true)
+    private int loser_score;
+
+    @Column(nullable = true)
+    private String etc;
+
+    @OneToMany(mappedBy = "matching")
+    private List<Challenger_List> Challenger_list = new ArrayList<>();
 }
