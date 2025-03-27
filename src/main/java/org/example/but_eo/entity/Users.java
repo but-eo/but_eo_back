@@ -43,10 +43,10 @@ public class Users {
     @Column(length = 20, nullable = false)
     private String name; //닉네임
 
-    @Column(length = 80, unique = true, nullable = false)
+    @Column(length = 100, unique = true, nullable = false)
     private String email;
 
-    @Column(length = 30, nullable = false)
+    @Column(length = 100, nullable = false)
     private String password;
 
     @Column(length = 15, nullable = false)
