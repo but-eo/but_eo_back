@@ -7,6 +7,7 @@ import org.example.but_eo.dto.UserRegisterRequestDto;
 import org.example.but_eo.service.UsersService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,4 +27,11 @@ public class UsersController {
         UserLoginResponseDto response = usersService.login(dto);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/my-info")
+    public ResponseEntity<String> myInfo(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        return ResponseEntity.ok("현재 로그인된 사용자 ID: " + userId);
+    }
+
 }

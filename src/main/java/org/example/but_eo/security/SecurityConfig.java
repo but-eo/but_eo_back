@@ -9,16 +9,20 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
+import lombok.RequiredArgsConstructor;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
         http
@@ -26,6 +30,8 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/**")).permitAll()
                         .requestMatchers(PathRequest.toH2Console()).permitAll() //h2-console 기본 경로 접근 허용
                         .requestMatchers("/", "/login/**").permitAll() //로그인 화면이랑 메인 화면 접근 허용
+                        .requestMatchers("/api/users/login", "/api/users/register").permitAll() //로그인이랑 회원가입만 허용 나머진 인증필요
+                        .anyRequest().authenticated()
                 )
 
                 .formLogin(login -> login
@@ -35,15 +41,14 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session  //서버가 세션을 사용하지 않고 JWT 기반으로 인증하도록
                         -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
                 .csrf((csrfConfig) -> csrfConfig.disable()) //JWT OAuth2사용하기 위해 csrf 비활성화 및 h2-console 사용하기 위함
-
                 .headers((headerConfig) ->
                         headerConfig.frameOptions((frameOptionsConfig) ->
                                 frameOptionsConfig.disable())
-                ); //h2가 iframe 사용해야하므로 X-frame-option 비활성화
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        ; //h2가 iframe 사용해야하므로 X-frame-option 비활성화
         return http.build();
     }
 
@@ -52,7 +57,6 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
 
         //TODO : 여기 안에 프론트 엔드 주소 넣어야함
         config.setAllowedOrigins(List.of("")); //허용할 도메인
