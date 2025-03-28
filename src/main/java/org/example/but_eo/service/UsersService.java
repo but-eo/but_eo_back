@@ -1,7 +1,8 @@
 package org.example.but_eo.service;
 
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import org.example.but_eo.dto.UserLoginRequestDto;
 import org.example.but_eo.dto.UserLoginResponseDto;
 import org.example.but_eo.dto.UserRegisterRequestDto;
@@ -11,8 +12,8 @@ import org.example.but_eo.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -30,9 +31,9 @@ public class UsersService {
         }
 
         // 비밀번호 확인
-        if (!dto.getPassword().equals(dto.getPasswordCheck())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
+//        if (!dto.getPassword().equals(dto.getPasswordCheck())) {
+//            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+//        }
 
         // TODO: 전화번호 인증 코드 검증 로직 추가 필요
 
@@ -44,13 +45,15 @@ public class UsersService {
         user.setName(dto.getName());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setTel(dto.getTel());
-        user.setGender(dto.isGender());
+        user.setGender(dto.getGender());
         user.setPrefer_sports(dto.getPreferSports());
-        user.setBirth(LocalDate.of(dto.getBirthYear(), 1, 1));
+        user.setBirth(dto.getBirthYear());
         user.setRegion(dto.getRegion());
         user.setCreated_at(LocalDateTime.now());
 
         usersRepository.save(user);
+
+        System.out.println(user.getEmail() + "로 회원가입에 성공했습니다.");
     }
 
     private String generateUserHash(String email) {

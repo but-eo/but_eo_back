@@ -71,10 +71,10 @@ public class Users {
     private int bowling_Score;
 
     @Column(nullable = false)
-    private boolean gender; //성별 0 : 남자, 1: 여자
+    private String gender; //성별 0 : 남자, 1: 여자
 
     @Column(nullable = true)
-    private LocalDate birth;
+    private String birth;
 
     @Column(nullable = true)
     private String profile; //프로필 사진
