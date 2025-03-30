@@ -1,6 +1,7 @@
 package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.but_eo.dto.UserLoginRequestDto;
 import org.example.but_eo.dto.UserLoginResponseDto;
 import org.example.but_eo.dto.UserRegisterRequestDto;
@@ -12,6 +13,7 @@ import org.springframework.security.core.Authentication;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
+@Slf4j
 public class UsersController {
 
     private final UsersService usersService;
@@ -24,7 +26,11 @@ public class UsersController {
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDto> login(@RequestBody UserLoginRequestDto dto) {
+//        log.info("로그인 요청 들어옴 : 이메일 = " +dto.getEmail());
+        System.out.println("로그인 요청 들어옴 : 이메일 = " +dto.getEmail());
         UserLoginResponseDto response = usersService.login(dto);
+//        log.info("로그인 응답 보냄 : " + response);
+        System.out.println("로그인 응답 보냄 : " + response);
         return ResponseEntity.ok(response);
     }
 
