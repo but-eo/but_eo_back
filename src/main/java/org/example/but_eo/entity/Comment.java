@@ -17,7 +17,7 @@ public class Comment {
 
     @Id
     @Column(length = 64, nullable = false)
-    private String comment_id;
+    private String commentId;
 
     @ManyToOne
     @JoinColumn(name = "board_id", nullable = false)
@@ -39,11 +39,11 @@ public class Comment {
     private String content;
 
     @Column(nullable = false)
-    private int like_count;
+    private int likeCount;
 
     @Column(nullable = true)
-    private LocalDateTime change_at;
+    private LocalDateTime changeAt;
 
     @Column(nullable = false)
-    private LocalDateTime create_at;
+    private LocalDateTime createAt;
 }

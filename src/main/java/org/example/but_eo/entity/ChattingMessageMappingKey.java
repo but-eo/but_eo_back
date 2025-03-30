@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
@@ -14,9 +13,9 @@ import java.util.Objects;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Challenger_Key implements Serializable {
-    private String match_id;
-    private String team_id;
+public class ChattingMessageMappingKey {
+    private String messageId;
+    private String fileId;
 
     @Override
     public boolean equals(Object o) {
@@ -26,12 +25,12 @@ public class Challenger_Key implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Challenger_Key that = (Challenger_Key) o;
-        return match_id.equals(that.match_id) && team_id.equals(that.team_id);
+        ChattingMessageMappingKey that = (ChattingMessageMappingKey) o;
+        return messageId.equals(that.messageId) && fileId.equals(that.fileId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(match_id, team_id);
+        return Objects.hash(messageId, fileId);
     }
 }

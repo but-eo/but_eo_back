@@ -19,7 +19,7 @@ public class Chatting {
 
     @Id
     @Column(length = 64, nullable = false)
-    private String chat_id;
+    private String chatId;
 
     public enum State {
         PUBLIC, PRIVATE, DELETE
@@ -33,10 +33,10 @@ public class Chatting {
     private String title;
 
     @Column(nullable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "chatting")
-    private List<Chatting_Member> memberList = new ArrayList<>();
+    private List<ChattingMember> memberList = new ArrayList<>();
     
     //TODO: 채팅 메세지 테이블 연결
 }

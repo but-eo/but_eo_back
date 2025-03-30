@@ -13,9 +13,9 @@ import java.util.Objects;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Chatting_Message_Mapping_Key {
-    private String message_id;
-    private String file_id;
+public class StadiumMappingKey {
+    private String stadiumId;
+    private String fileId;
 
     @Override
     public boolean equals(Object o) {
@@ -25,12 +25,12 @@ public class Chatting_Message_Mapping_Key {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Chatting_Message_Mapping_Key that = (Chatting_Message_Mapping_Key) o;
-        return message_id.equals(that.message_id) && file_id.equals(that.file_id);
+        StadiumMappingKey that = (StadiumMappingKey) o;
+        return stadiumId.equals(that.stadiumId) && fileId.equals(that.fileId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(message_id, file_id);
+        return Objects.hash(stadiumId, fileId);
     }
 }

@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.w3c.dom.Text;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ public class Board {
 
     @Id
     @Column(length = 64, nullable = false)
-    private String board_id;
+    private String boardId;
 
     @ManyToOne
     @JoinColumn(name = "user_hash_id", nullable = false)
@@ -41,22 +40,22 @@ public class Board {
     private String content; //게시글 내용
 
     @Column(nullable = false)
-    private int like_count;
+    private int likeCount;
 
     @Column(nullable = false)
-    private int comment_count;
+    private int commentCount;
 
     @Column(nullable = true)
-    private LocalDateTime updated_at;
+    private LocalDateTime updatedAt;
 
     @Column(nullable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "board")
-    private List<Comment> comment_List = new ArrayList<>();
+    private List<Comment> commentList = new ArrayList<>();
 
     @OneToMany(mappedBy = "board")
-    private List<Board_Mapping> board_Mapping_List = new ArrayList<>();
+    private List<BoardMapping> boardMappingList = new ArrayList<>();
 
     //TODO 유저 연결, 카테고리 분리, 사진 개수 설정
 }
