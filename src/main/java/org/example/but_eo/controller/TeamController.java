@@ -23,6 +23,7 @@ public class TeamController {
             @RequestParam("region") String region,
             @RequestParam("member_age") int memberAge,
             @RequestParam("team_case") String teamCaseStr,
+            @RequestParam("team_description") String teamDescription,
             @RequestPart(value = "team_img", required = false) MultipartFile teamImg,
             Authentication authentication) {
 
@@ -30,7 +31,7 @@ public class TeamController {
         Team.Team_Case teamCase = Team.Team_Case.valueOf(teamCaseStr);
         String userId = (String) authentication.getPrincipal();
 
-        teamService.createTeam(teamName, event, region, memberAge, teamCase, teamImg, userId);
+        teamService.createTeam(teamName, event, region, memberAge, teamCase, teamDescription, teamImg, userId);
         return ResponseEntity.ok("팀 생성 성공");
     }
 }

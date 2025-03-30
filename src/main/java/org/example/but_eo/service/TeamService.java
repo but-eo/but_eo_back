@@ -23,7 +23,7 @@ public class TeamService {
     private final TeamMemberRepository teamMemberRepository;
 
     public void createTeam(String teamName, Team.Event event, String region,
-                           int memberAge, Team.Team_Case teamCase,
+                           int memberAge, Team.Team_Case teamCase, String teamDescription,
                            MultipartFile teamImg, String userId) {
 
         Users user = usersRepository.findByUserHashId(userId);
@@ -41,6 +41,7 @@ public class TeamService {
         team.setRegion(region);
         team.setMemberAge(memberAge);
         team.setTeamCase(teamCase);
+        team.setTeamDescription(teamDescription);
         team.setTeamImg(imgUrl);
         team.setRating(1000);
         team.setTotalMembers(1);

@@ -24,7 +24,11 @@ public class UsersController {
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDto> login(@RequestBody UserLoginRequestDto dto) {
+//        log.info("로그인 요청 들어옴 : 이메일 = " +dto.getEmail());
+        System.out.println("로그인 요청 들어옴 : 이메일 = " +dto.getEmail());
         UserLoginResponseDto response = usersService.login(dto);
+//        log.info("로그인 응답 보냄 : " + response);
+        System.out.println("로그인 응답 보냄 : " + response);
         return ResponseEntity.ok(response);
     }
 
