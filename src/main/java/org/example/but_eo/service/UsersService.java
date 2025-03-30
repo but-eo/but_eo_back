@@ -62,6 +62,9 @@ public class UsersService {
     }
 
     public UserLoginResponseDto login(UserLoginRequestDto dto) {
+
+        System.out.println("로그인 서비스 시작: " + dto.getEmail());
+
         Users user = usersRepository.findByEmail(dto.getEmail());
         if (user == null) {
             throw new IllegalArgumentException("존재하지 않는 이메일입니다.");
