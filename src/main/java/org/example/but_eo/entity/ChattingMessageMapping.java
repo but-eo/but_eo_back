@@ -11,18 +11,18 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Chatting_Message_Mapping {
+public class ChattingMessageMapping {
 
     @EmbeddedId
-    private Chatting_Message_Mapping_Key chatting__Message_Mapping_key;
+    private ChattingMessageMappingKey chattingMessageMappingkey;
 
     @ManyToOne
-    @MapsId("message_id")
+    @MapsId("messageId")
     @JoinColumn(name = "message_id", nullable = false)
-    private Chatting_Message chatting_Message;
+    private ChattingMessage chattingMessage;
 
     @ManyToOne
-    @MapsId("file_id")
+    @MapsId("fileId")
     @JoinColumn(name = "file_id", nullable = false)
     private File file;
 }

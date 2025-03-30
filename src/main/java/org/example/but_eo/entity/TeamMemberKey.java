@@ -13,9 +13,9 @@ import java.util.Objects;
 @AllArgsConstructor
 @Setter
 @Getter
-public class Team_Member_Key {
-    private String user_hash_id;
-    private String team_id;
+public class TeamMemberKey {
+    private String userHashId;
+    private String teamId;
 
     @Override
     public boolean equals(Object o) {
@@ -25,12 +25,12 @@ public class Team_Member_Key {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Team_Member_Key that = (Team_Member_Key) o;
-        return user_hash_id.equals(that.user_hash_id) && team_id.equals(that.team_id);
+        TeamMemberKey that = (TeamMemberKey) o;
+        return userHashId.equals(that.userHashId) && teamId.equals(that.teamId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(user_hash_id, team_id);
+        return Objects.hash(userHashId, teamId);
     }
 }

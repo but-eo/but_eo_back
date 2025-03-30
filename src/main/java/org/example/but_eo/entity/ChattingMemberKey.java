@@ -14,9 +14,9 @@ import java.util.Objects;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Chatting_Member_Key implements Serializable {
-    private String user_hash_id;
-    private String chat_id;
+public class ChattingMemberKey implements Serializable {
+    private String userHashId;
+    private String chatId;
 
     @Override
     public boolean equals(Object o) {
@@ -26,12 +26,12 @@ public class Chatting_Member_Key implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Chatting_Member_Key that = (Chatting_Member_Key) o;
-        return user_hash_id.equals(that.user_hash_id) && chat_id.equals(that.chat_id);
+        ChattingMemberKey that = (ChattingMemberKey) o;
+        return userHashId.equals(that.userHashId) && chatId.equals(that.chatId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(user_hash_id, chat_id);
+        return Objects.hash(userHashId, chatId);
     }
 }

@@ -11,18 +11,18 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Challenger_List {
+public class StadiumMapping {
 
     @EmbeddedId
-    private Challenger_Key challenger_key;
+    private StadiumMappingKey stadiumMappingKey;
 
     @ManyToOne
-    @MapsId("team_id")
-    @JoinColumn(name = "team_id", nullable = false)
-    private Team team;
+    @MapsId("stadiumId")
+    @JoinColumn(name = "stadium_id", nullable = false)
+    private Stadium stadium;
 
     @ManyToOne
-    @MapsId("match_id")
-    @JoinColumn(name = "match_id", nullable = false)
-    private Matching matching;
+    @MapsId("fileId")
+    @JoinColumn(name = "file_id", nullable = false)
+    private File file;
 }

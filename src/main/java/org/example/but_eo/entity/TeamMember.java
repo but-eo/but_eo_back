@@ -11,18 +11,18 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Team_Member {
+public class TeamMember {
 
     @EmbeddedId
-    private Team_Member_Key team_member_key;
+    private TeamMemberKey teamMemberKey;
 
     @ManyToOne
-    @MapsId("user_hash_id")
+    @MapsId("userHashId")
     @JoinColumn(name = "user_hash_id", nullable = false)
     private Users user;
 
     @ManyToOne
-    @MapsId("team_id")
+    @MapsId("teamId")
     @JoinColumn(name = "team_id", nullable = false)
     private Team team;
 
