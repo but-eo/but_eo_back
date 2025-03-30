@@ -6,12 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -22,7 +19,7 @@ public class Users {
 
     @Id
     @Column(length = 64, nullable = false)
-    private String user_hash_id; //해시256
+    private String userHashId; //해시256
 
     public enum State{
         ACTIVE, DELETED_WAIT
@@ -53,22 +50,22 @@ public class Users {
     private String tel;
 
     @Column(length = 30, nullable = true)
-    private String prefer_sports; //선호종목
+    private String preferSports; //선호종목
 
     @Column(length = 30, nullable = false)
     private String region; //지역
 
     @Column(nullable = true)
-    private int badminton_score;
+    private int badmintonScore;
 
     @Column(nullable = true)
-    private int tennis_score;
+    private int tennisScore;
 
     @Column(nullable = true)
-    private int table_tennis_score;
+    private int tableTennisScore;
 
     @Column(nullable = true)
-    private int bowling_Score;
+    private int bowlingScore;
 
     @Column(nullable = false)
     private String gender; //성별 0 : 남자, 1: 여자
@@ -80,23 +77,23 @@ public class Users {
     private String profile; //프로필 사진
 
     @Column(nullable = false)
-    private LocalDateTime created_at; //계정 생성일
+    private LocalDateTime createdAt; //계정 생성일
 
     @OneToMany(mappedBy = "user")
-    private List<Board> board_List = new ArrayList<>();
+    private List<Board> boardList = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<Comment> comment_List = new ArrayList<>();
+    private List<Comment> commentList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "sender_user")
-    private List<Notification> sender_List = new ArrayList<>();
+    @OneToMany(mappedBy = "senderUser")
+    private List<Notification> senderList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "receiver_user")
-    private List<Notification> receiver_List = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user")
-    private List<Chatting_Member> chating_List = new ArrayList<>();
+    @OneToMany(mappedBy = "receiverUser")
+    private List<Notification> receiverList = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private  List<Team_Member> team_Member_List = new ArrayList<>();
+    private List<ChattingMember> chatingList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private  List<TeamMember> teamMemberList = new ArrayList<>();
 }

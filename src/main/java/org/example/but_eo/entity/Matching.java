@@ -19,7 +19,7 @@ public class Matching {
 
     @Id
     @Column(length = 64, nullable = false)
-    private String match_id;
+    private String matchId;
 
     @ManyToOne
     @JoinColumn(name = "stadium_id", nullable = true)
@@ -31,15 +31,15 @@ public class Matching {
 
     @ManyToOne
     @JoinColumn(name = "Challenger", nullable = true)
-    private Team Challenger_Team;
+    private Team challengerTeam;
 
     @ManyToOne
     @JoinColumn(name = "winner_id", nullable = true)
-    private Team winner_Team;
+    private Team winnerTeam;
 
     @ManyToOne
     @JoinColumn(name = "loser_id", nullable = true)
-    private Team loser_Team;
+    private Team loserTeam;
 
     public enum State {
         SUCCESS ,COMPLETE, CANCEL, WAITING
@@ -50,7 +50,7 @@ public class Matching {
     private State state;
 
     @Column(nullable = false)
-    private LocalDateTime match_date;
+    private LocalDateTime matchDate;
 
     public enum Match_Type {
         SOCCER, FUTSAL, BASEBALL, BASKETBALL, BADMINTON, TENNIS, TABLE_TENNIS, BOWLING
@@ -58,20 +58,20 @@ public class Matching {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Match_Type match_type;
+    private Match_Type matchType;
 
     @Column(nullable = false)
     private Boolean loan;
 
     @Column(nullable = true)
-    private int winner_score;
+    private int winnerScore;
 
     @Column(nullable = true)
-    private int loser_score;
+    private int loserScore;
 
     @Column(nullable = true)
     private String etc;
 
     @OneToMany(mappedBy = "matching")
-    private List<Challenger_List> Challenger_list = new ArrayList<>();
+    private List<ChallengerList> challengerList = new ArrayList<>();
 }

@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -17,7 +15,7 @@ public class Team {
 
     @Id
     @Column(length = 64, nullable = false)
-    private String team_id;
+    private String teamId;
 
     public enum Team_Type {
         SOLO, TEAM
@@ -25,19 +23,19 @@ public class Team {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Team_Type team_type;
+    private Team_Type teamType;
 
     @Column(nullable = true)
-    private String team_img; //팀 프로필 사진
+    private String teamImg; //팀 프로필 사진
 
     @Column(length = 20, nullable = false)
-    private String team_name;
+    private String teamName;
 
     @Column(length = 30, nullable = false)
     private String region;
 
     @Column(nullable = false)
-    private int member_age; // 팀 평균 연령
+    private int memberAge; // 팀 평균 연령
 
     @Column(nullable = false)
     private int rating; // 팀 점수
@@ -48,16 +46,16 @@ public class Team {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
-    private Team_Case team_case;
+    private Team_Case teamCase;
 
     @Column(nullable = false)
-    private int total_members;
+    private int totalMembers;
 
     @Column(columnDefinition = "TEXT", nullable = true)
-    private String team_description; //팀 설명
+    private String teamDescription; //팀 설명
 
     @Column(nullable = true)
-    private int total_review; //리뷰 총합점
+    private int totalReview; //리뷰 총합점
 
     public enum Event{
         SOCCER, FUTSAL, BASEBALL, BASKETBALL, BADMINTON, TENNIS, TABLE_TENNIS, BOWLING
@@ -68,32 +66,32 @@ public class Team {
     private Event event;
 
     @Column(nullable = false)
-    private int match_count;
+    private int matchCount;
 
     @Column(nullable = false)
-    private int win_count;
+    private int winCount;
 
     @Column(nullable = false)
-    private int lose_count;
+    private int loseCount;
 
     @Column(nullable = false)
-    private int draw_count;
+    private int drawCount;
 
     @OneToMany(mappedBy = "team")
-    private List<Challenger_List> challenger_List = new ArrayList<>();
+    private List<ChallengerList> challengerList = new ArrayList<>();
 
     @OneToMany(mappedBy = "team")
-    private List<Team_Member> team_member_list = new ArrayList<>();
+    private List<TeamMember> teamMemberList = new ArrayList<>();
 
     @OneToMany(mappedBy = "team")
-    private List<Matching> matching_List = new ArrayList<>();
+    private List<Matching> matchingList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "Challenger_Team")
-    private List<Matching> Challenger_Team_List = new ArrayList<>();
+    @OneToMany(mappedBy = "challengerTeam")
+    private List<Matching> challengerTeamList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "winner_Team")
-    private List<Matching> winner_Team_List = new ArrayList<>();
+    @OneToMany(mappedBy = "winnerTeam")
+    private List<Matching> winnerTeamList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "loser_Team")
-    private List<Matching> loser_Team_List = new ArrayList<>();
+    @OneToMany(mappedBy = "loserTeam")
+    private List<Matching> loserTeamList = new ArrayList<>();
 }

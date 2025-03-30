@@ -13,4 +13,6 @@ public interface UsersRepository extends JpaRepository<Users, String> {
 
     // 이메일로 사용자 조회 (로그인이나 인증 등에서 활용 가능)
     Users findByEmail(String email);
+
+    Users findByUserHashId(String userHashId);
 }

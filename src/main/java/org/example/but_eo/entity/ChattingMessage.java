@@ -15,24 +15,24 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Chatting_Message {
+public class ChattingMessage {
 
     @Id
     @Column(length = 64, nullable = false)
-    private String message_id;
+    private String messageId;
 
     @ManyToOne
     @JoinColumns({
             @JoinColumn(name = "user_hash_id", referencedColumnName = "user_hash_id", nullable = false),
             @JoinColumn(name = "chat_id", referencedColumnName = "chat_id", nullable = false)
     })
-    private Chatting_Member chatting_member;
+    private ChattingMember chattingMember;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String message;
 
     @Column(nullable = false)
-    private boolean read_check;
+    private boolean readCheck;
 
     public enum Division{
         USER, ADMIN, BUSINESS
@@ -43,8 +43,8 @@ public class Chatting_Message {
     private Division division;
 
     @Column(nullable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "chatting_Message")
-    private List<Chatting_Message_Mapping> chatting_Message_Mapping_list = new ArrayList<>();
+    @OneToMany(mappedBy = "chattingMessage")
+    private List<ChattingMessageMapping> chattingMessageMappinglist = new ArrayList<>();
 }

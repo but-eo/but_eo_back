@@ -38,7 +38,7 @@ public class UsersService {
         // TODO: 전화번호 인증 코드 검증 로직 추가 필요
 
         Users user = new Users();
-        user.setUser_hash_id(generateUserHash(dto.getEmail())); // 예: SHA-256 등
+        user.setUserHashId(generateUserHash(dto.getEmail())); // 예: SHA-256 등
         user.setState(Users.State.ACTIVE);
         user.setDivision(Users.Division.USER);
         user.setEmail(dto.getEmail());
@@ -46,10 +46,10 @@ public class UsersService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setTel(dto.getTel());
         user.setGender(dto.getGender());
-        user.setPrefer_sports(dto.getPreferSports());
+        user.setPreferSports(dto.getPreferSports());
         user.setBirth(dto.getBirthYear());
         user.setRegion(dto.getRegion());
-        user.setCreated_at(LocalDateTime.now());
+        user.setCreatedAt(LocalDateTime.now());
 
         usersRepository.save(user);
 
@@ -74,8 +74,7 @@ public class UsersService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        String token = jwtUtil.generateToken(user.getUser_hash_id());
-        System.out.println("토큰 생성");
+        String token = jwtUtil.generateToken(user.getUserHashId());
 
         return new UserLoginResponseDto(token, user.getName());
     }

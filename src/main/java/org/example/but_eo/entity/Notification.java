@@ -17,15 +17,15 @@ public class Notification {
 
     @Id
     @Column(length = 64, nullable = false)
-    private String alarm_id;
+    private String alarmId;
 
     @ManyToOne
     @JoinColumn(name = "sender", nullable = false)
-    private Users sender_user;
+    private Users senderUser;
 
     @ManyToOne
     @JoinColumn(name = "receiver", nullable = false)
-    private Users receiver_user;
+    private Users receiverUser;
 
     public enum Type{
         MATCH_INVITED, MATCH_RESULT, TEAM_REQUEST, TEAM_ACCEPTED, TEAM_DECLINED, GENERAL, SYSTEM
@@ -43,6 +43,6 @@ public class Notification {
     private State state;
 
     @Column(nullable = false)
-    private LocalDateTime notification_date; //알람 전송일
+    private LocalDateTime notificationDate; //알람 전송일
 
 }
