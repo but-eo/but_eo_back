@@ -96,4 +96,7 @@ public class Users {
 
     @OneToMany(mappedBy = "user")
     private  List<TeamMember> teamMemberList = new ArrayList<>();
+
+    @Column(length = 500)
+    private String refreshToken;  // 리프레시 토큰 저장
 }
