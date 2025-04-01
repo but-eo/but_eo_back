@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.example.but_eo.dto.UserLoginRequestDto;
 import org.example.but_eo.dto.UserLoginResponseDto;
 import org.example.but_eo.dto.UserRegisterRequestDto;
+import org.example.but_eo.dto.UserUpdateRequestDto;
 import org.example.but_eo.entity.Users;
 import org.example.but_eo.service.UsersService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -77,7 +79,32 @@ public class UsersController {
         }
     }
 
+    @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateUser(
+            @ModelAttribute UserUpdateRequestDto request,
+            Authentication authentication) {
 
+        String userId = (String) authentication.getPrincipal();
+        usersService.updateUser(userId, request);
+
+        return ResponseEntity.ok("회원 정보 수정 완료");
+    }
+
+    //상태 변경
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteUser(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        usersService.deleteUser(userId);
+        return ResponseEntity.ok("회원 탈퇴 완료");
+    }
+
+    //영구 삭제
+    @DeleteMapping("/permanent")
+    public ResponseEntity<?> deleteUserPermanently(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        usersService.deleteUserPermanently(userId);
+        return ResponseEntity.ok("계정이 완전히 삭제되었습니다.");
+    }
 
 
 }
