@@ -5,10 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.but_eo.dto.UserLoginRequestDto;
 import org.example.but_eo.dto.UserLoginResponseDto;
 import org.example.but_eo.dto.UserRegisterRequestDto;
+import org.example.but_eo.entity.Users;
 import org.example.but_eo.service.UsersService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+import java.util.Map;
+import org.example.but_eo.util.JwtUtil;
+import org.example.but_eo.repository.UsersRepository;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,6 +21,8 @@ import org.springframework.security.core.Authentication;
 public class UsersController {
 
     private final UsersService usersService;
+    private final JwtUtil jwtUtil;
+    private final UsersRepository usersRepository;
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody UserRegisterRequestDto dto) {
@@ -38,6 +44,28 @@ public class UsersController {
     public ResponseEntity<String> myInfo(Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
         return ResponseEntity.ok("현재 로그인된 사용자 ID: " + userId);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String refreshToken) {
+        String token = refreshToken.replace("Bearer ", "");
+
+        if (!jwtUtil.validateToken(token)) {
+            return ResponseEntity.status(401).body("Refresh Token이 유효하지 않습니다.");
+        }
+
+        String userId = jwtUtil.getUserIdFromToken(token);
+
+        Users user = usersRepository.findByUserHashId(userId);
+        if (user == null || !token.equals(user.getRefreshToken())) {
+            return ResponseEntity.status(401).body("Refresh Token이 일치하지 않습니다.");
+        }
+
+        String newAccessToken = jwtUtil.generateAccessToken(userId);
+
+        return ResponseEntity.ok().body(Map.of(
+                "accessToken", newAccessToken
+        ));
     }
 
 }

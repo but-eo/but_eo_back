@@ -74,9 +74,14 @@ public class UsersService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        String token = jwtUtil.generateToken(user.getUserHashId());
+        String accessToken = jwtUtil.generateAccessToken(user.getUserHashId());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getUserHashId());
 
-        return new UserLoginResponseDto(token, user.getName());
+        user.setRefreshToken(refreshToken);
+        usersRepository.save(user);
+
+        return new UserLoginResponseDto(accessToken, refreshToken, user.getName());
     }
+
 
 }
