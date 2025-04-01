@@ -8,6 +8,8 @@ import org.example.but_eo.dto.UserRegisterRequestDto;
 import org.example.but_eo.entity.Users;
 import org.example.but_eo.service.UsersService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 import java.util.Map;
@@ -47,7 +49,7 @@ public class UsersController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String refreshToken) {
+        public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String refreshToken) {
         String token = refreshToken.replace("Bearer ", "");
 
         if (!jwtUtil.validateToken(token)) {
@@ -67,5 +69,17 @@ public class UsersController {
                 "accessToken", newAccessToken
         ));
     }
+
+    @RestController
+    @RequestMapping("/oauth2")
+    public class OAuth2Controller {
+        @GetMapping("/success")
+        public String oauthLoginSuccess(@AuthenticationPrincipal OAuth2User oAuth2User) {
+            return "소셜 로그인 성공! 유저 이름: " + oAuth2User.getAttribute("name");
+        }
+    }
+
+
+
 
 }
