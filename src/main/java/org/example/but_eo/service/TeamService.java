@@ -1,6 +1,8 @@
 package org.example.but_eo.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.but_eo.dto.UpdateTeamRequest;
 import org.example.but_eo.entity.*;
 import org.example.but_eo.repository.TeamMemberRepository;
 import org.example.but_eo.repository.TeamRepository;
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -22,6 +25,14 @@ public class TeamService {
     private final UsersRepository usersRepository;
     private final TeamMemberRepository teamMemberRepository;
 
+    private final Set<Team.Event> soloCompatibleEvents = Set.of(
+            Team.Event.BADMINTON,
+            Team.Event.TENNIS,
+            Team.Event.TABLE_TENNIS,
+            Team.Event.BOWLING
+    );
+
+    //팀 생성 코드
     public void createTeam(String teamName, Team.Event event, String region,
                            int memberAge, Team.Team_Case teamCase, String teamDescription,
                            MultipartFile teamImg, String userId) {
@@ -68,6 +79,71 @@ public class TeamService {
         teamMemberRepository.save(teamMember);
     }
 
+    @Transactional
+    public void updateTeam(String teamId, UpdateTeamRequest req, String userId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀이 존재하지 않습니다."));
+
+        // 권한 체크: 리더만 수정 가능
+        TeamMemberKey key = new TeamMemberKey(userId, teamId);
+        TeamMember member = teamMemberRepository.findById(key)
+                .orElseThrow(() -> new IllegalStateException("팀에 속해있지 않습니다."));
+        if (member.getType() != TeamMember.Type.LEADER) {
+            throw new IllegalAccessError("팀 수정은 리더만 할 수 있습니다.");
+        }
+        
+        //팀 타입 (축구 야구 농구 풋살)이거면 솔로 안됨
+        if (req.getTeamType() != null) {
+            Team.Event currentEvent = team.getEvent();
+
+            if (soloCompatibleEvents.contains(currentEvent)) {
+                try {
+                    Team.Team_Type newType = Team.Team_Type.valueOf(req.getTeamType());
+                    team.setTeamType(newType);
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException("teamType은 SOLO 또는 TEAM 중 하나여야 합니다.");
+                }
+            } else {
+                throw new IllegalArgumentException("이 종목에서는 teamType을 수정할 수 없습니다.");
+            }
+        }
+
+        if (req.getTeamName() != null) team.setTeamName(req.getTeamName());
+        if (req.getRegion() != null) team.setRegion(req.getRegion());
+        if (req.getMemberAge() != null) team.setMemberAge(req.getMemberAge());
+        if (req.getTeamCase() != null) team.setTeamCase(Team.Team_Case.valueOf(req.getTeamCase()));
+        if (req.getTeamDescription() != null) team.setTeamDescription(req.getTeamDescription());
+
+        if (req.getTeamImg() != null && !req.getTeamImg().isEmpty()) {
+            String newImgUrl = saveImage(req.getTeamImg());
+            team.setTeamImg(newImgUrl);
+        }
+
+        teamRepository.save(team);
+        teamRepository.flush();
+        System.out.println("teamName: " + team.getTeamName());
+        System.out.println("teamDescription: " + team.getTeamDescription());
+    }
+
+    @Transactional
+    //팀 삭제 코드
+    public void deleteTeam(String teamId, String userId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀이 존재하지 않습니다."));
+
+        TeamMemberKey key = new TeamMemberKey(userId, teamId);
+        TeamMember member = teamMemberRepository.findById(key)
+                .orElseThrow(() -> new IllegalStateException("팀에 속해있지 않습니다."));
+        if (member.getType() != TeamMember.Type.LEADER) {
+            throw new IllegalAccessError("팀 삭제는 리더만 할 수 있습니다.");
+        }
+
+        // 팀원 먼저 삭제 → 팀 삭제
+        teamMemberRepository.deleteAll(team.getTeamMemberList());
+        teamRepository.delete(team);
+    }
+
+    //이미지 저장
     private String saveImage(MultipartFile file) {
         try {
             String uploadDir = "src/main/resources/static/images/team";
