@@ -1,6 +1,7 @@
 package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.but_eo.dto.UpdateTeamRequest;
 import org.example.but_eo.entity.Team;
 import org.example.but_eo.service.TeamService;
 import org.springframework.http.MediaType;
@@ -16,6 +17,7 @@ public class TeamController {
 
     private final TeamService teamService;
 
+    //팀 생성
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> createTeam(
             @RequestParam("team_name") String teamName,
@@ -34,4 +36,27 @@ public class TeamController {
         teamService.createTeam(teamName, event, region, memberAge, teamCase, teamDescription, teamImg, userId);
         return ResponseEntity.ok("팀 생성 성공");
     }
+
+    //팀 수정
+    @PatchMapping(value = "/{teamId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateTeam(
+            @PathVariable String teamId,
+            @ModelAttribute UpdateTeamRequest request,
+            Authentication authentication) {
+
+        String userId = (String) authentication.getPrincipal();
+        teamService.updateTeam(teamId, request, userId);
+        System.out.println("팀 업데이트 성공");
+        return ResponseEntity.ok("팀 정보 수정 완료");
+    }
+
+    //팀 삭제
+    @DeleteMapping("/{teamId}")
+    public ResponseEntity<?> deleteTeam(@PathVariable String teamId, Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        teamService.deleteTeam(teamId, userId);
+        System.out.println("팀 삭제 성공");
+        return ResponseEntity.ok("팀 삭제 완료");
+    }
+
 }
