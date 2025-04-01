@@ -33,15 +33,21 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         String email = null;
         String name = null;
+        String profileImg = null;
+        String gender = null;
 
         if ("kakao".equals(registrationId)) {
             Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
             email = (String) kakaoAccount.get("email");
             name = (String) ((Map<String, Object>) kakaoAccount.get("profile")).get("nickname");
+            profileImg = (String) ((Map<String, Object>) kakaoAccount.get("profile")).get("profile_image_url");
+            gender = (String) kakaoAccount.get("gender");
         } else if ("naver".equals(registrationId)) {
             Map<String, Object> response = (Map<String, Object>) attributes.get("response");
             email = (String) response.get("email");
             name = (String) response.get("name");
+            profileImg = (String) response.get("profile_image");
+            gender = (String) response.get("gender");
         }
 
         Users user = usersRepository.findByEmail(email);
@@ -50,6 +56,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             user.setUserHashId(String.valueOf(email.hashCode()));
             user.setEmail(email);
             user.setName(name);
+            user.setProfile(profileImg);
+            user.setGender(gender);
             user.setState(Users.State.ACTIVE);
             user.setDivision(Users.Division.USER);
             user.setCreatedAt(LocalDateTime.now());

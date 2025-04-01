@@ -46,13 +46,13 @@ public class Users {
     @Column(length = 100, nullable = false)
     private String password;
 
-    @Column(length = 15, nullable = false)
+    @Column(length = 15, nullable = true)
     private String tel;
 
     @Column(length = 30, nullable = true)
     private String preferSports; //선호종목
 
-    @Column(length = 30, nullable = false)
+    @Column(length = 30, nullable = true)
     private String region; //지역
 
     @Column(nullable = true)
@@ -67,7 +67,7 @@ public class Users {
     @Column(nullable = true)
     private int bowlingScore;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String gender; //성별 0 : 남자, 1: 여자
 
     @Column(nullable = true)
