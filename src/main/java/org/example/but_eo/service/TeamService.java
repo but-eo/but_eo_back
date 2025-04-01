@@ -26,6 +26,11 @@ public class TeamService {
                            int memberAge, Team.Team_Case teamCase, String teamDescription,
                            MultipartFile teamImg, String userId) {
 
+        // 이미 해당 종목의 팀에 소속되어 있으면 예외 발생
+        if (teamMemberRepository.existsByUserAndEvent(userId, event)) {
+            throw new IllegalStateException("이미 해당 종목의 팀에 소속되어 있습니다.");
+        }
+
         Users user = usersRepository.findByUserHashId(userId);
         String teamId = UUID.randomUUID().toString();
 
