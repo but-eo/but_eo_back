@@ -11,8 +11,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.example.but_eo.dto.*;
+import org.example.but_eo.entity.TeamMember;
 import org.example.but_eo.entity.Users;
-import org.example.but_eo.repository.UsersRepository;
+import org.example.but_eo.repository.*;
 import org.example.but_eo.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,13 @@ import org.springframework.web.multipart.MultipartFile;
 public class UsersService {
 
     private final UsersRepository usersRepository;
+    private final TeamMemberRepository teamMemberRepository;
+    private final CommentRepository commentRepository;
+    private final BoardRepository boardRepository;
+    private final ChattingMemberRepository chattingMemberRepository;
+    private final NotificationRepository notificationRepository;
+    private final FileRepository fileRepository;
+
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
@@ -142,6 +150,14 @@ public class UsersService {
             throw new IllegalArgumentException("해당 유저를 찾을 수 없습니다.");
         }
 
+        // 팀 리더인지 확인
+        List<TeamMember> memberList = teamMemberRepository.findAllByUser(user);
+        for (TeamMember member : memberList) {
+            if (member.getType() == TeamMember.Type.LEADER) {
+                throw new IllegalStateException("팀 리더는 계정을 삭제할 수 없습니다. 리더 위임 후 진행해주세요.");
+            }
+        }
+
         // 실제 삭제 or soft delete (상태만 변경) 일단은 삭제 대기로
         user.setState(Users.State.DELETED_WAIT);
         usersRepository.save(user);
@@ -161,6 +177,26 @@ public class UsersService {
             throw new IllegalStateException("삭제 대기 상태인 유저만 완전 삭제할 수 있습니다.");
         }
 
+        // 팀 멤버 삭제
+        teamMemberRepository.deleteAllByUser(user);
+
+        // 댓글 삭제
+        commentRepository.deleteAllByUser(user);
+
+        // 게시글 삭제
+        boardRepository.deleteAllByUser(user);
+
+        // 채팅 멤버 삭제
+        chattingMemberRepository.deleteAllByUser(user);
+
+        // 알림 (보낸/받은) 삭제
+        notificationRepository.deleteAllByReceiverUser(user);
+        notificationRepository.deleteAllBySenderUser(user);
+
+        // 파일 삭제 (파일 엔티티가 사용자와 연관돼 있을 경우)
+        fileRepository.deleteAllByUserHashId(user);
+
+        //유저 삭제
         usersRepository.delete(user);
         System.out.println("유저 완전 삭제 완료: " + user.getEmail());
     }
