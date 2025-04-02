@@ -1,7 +1,13 @@
 package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.but_eo.dto.*;
+
+import lombok.extern.slf4j.Slf4j;
+import org.example.but_eo.dto.UserLoginRequestDto;
+import org.example.but_eo.dto.UserLoginResponseDto;
+import org.example.but_eo.dto.UserRegisterRequestDto;
+import org.example.but_eo.dto.UserUpdateRequestDto;
+
 import org.example.but_eo.entity.Users;
 import org.example.but_eo.service.UsersService;
 import org.springframework.http.MediaType;
@@ -19,6 +25,7 @@ import org.example.but_eo.repository.UsersRepository;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
+@Slf4j
 public class UsersController {
 
     private final UsersService usersService;
