@@ -6,12 +6,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-import org.example.but_eo.dto.UserLoginRequestDto;
-import org.example.but_eo.dto.UserLoginResponseDto;
-import org.example.but_eo.dto.UserRegisterRequestDto;
-import org.example.but_eo.dto.UserUpdateRequestDto;
+import org.example.but_eo.dto.*;
 import org.example.but_eo.entity.Users;
 import org.example.but_eo.repository.UsersRepository;
 import org.example.but_eo.util.JwtUtil;
@@ -164,6 +163,52 @@ public class UsersService {
 
         usersRepository.delete(user);
         System.out.println("유저 완전 삭제 완료: " + user.getEmail());
+    }
+
+    //자기 자신 조회
+    public UserInfoResponseDto getUserInfo(String userId) {
+        Users user = usersRepository.findByUserHashId(userId);
+        if (user == null) throw new IllegalArgumentException("사용자 없음");
+
+        return new UserInfoResponseDto(
+                user.getName(),
+                user.getEmail(),
+                user.getTel(),
+                user.getRegion(),
+                user.getPreferSports(),
+                user.getGender(),
+                user.getProfile(),
+                user.getBirth(),
+                user.getBadmintonScore(),
+                user.getTennisScore(),
+                user.getTableTennisScore(),
+                user.getBowlingScore(),
+                user.getCreatedAt()
+        );
+    }
+
+    public List<UserInfoResponseDto> getAllUsers() {
+        return usersRepository.findAll().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    private UserInfoResponseDto convertToDto(Users user) {
+        return new UserInfoResponseDto(
+                user.getName(),
+                user.getEmail(),
+                user.getTel(),
+                user.getRegion(),
+                user.getPreferSports(),
+                user.getGender(),
+                user.getProfile(),
+                user.getBirth(),
+                user.getBadmintonScore(),
+                user.getTennisScore(),
+                user.getTableTennisScore(),
+                user.getBowlingScore(),
+                user.getCreatedAt()
+        );
     }
 
 

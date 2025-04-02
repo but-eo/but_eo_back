@@ -3,6 +3,8 @@ package org.example.but_eo.repository;
 import org.example.but_eo.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface UsersRepository extends JpaRepository<Users, String> {
 
     // 이메일 중복 확인용
@@ -15,4 +17,6 @@ public interface UsersRepository extends JpaRepository<Users, String> {
     Users findByEmail(String email);
 
     Users findByUserHashId(String userHashId);
+
+    List<Users> findAllByName(String name);
 }

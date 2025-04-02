@@ -1,10 +1,7 @@
 package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.but_eo.dto.UserLoginRequestDto;
-import org.example.but_eo.dto.UserLoginResponseDto;
-import org.example.but_eo.dto.UserRegisterRequestDto;
-import org.example.but_eo.dto.UserUpdateRequestDto;
+import org.example.but_eo.dto.*;
 import org.example.but_eo.entity.Users;
 import org.example.but_eo.service.UsersService;
 import org.springframework.http.MediaType;
@@ -13,6 +10,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+
+import java.util.List;
 import java.util.Map;
 import org.example.but_eo.util.JwtUtil;
 import org.example.but_eo.repository.UsersRepository;
@@ -104,6 +103,51 @@ public class UsersController {
         String userId = (String) authentication.getPrincipal();
         usersService.deleteUserPermanently(userId);
         return ResponseEntity.ok("계정이 완전히 삭제되었습니다.");
+    }
+
+    //자기 자신 조회
+    @GetMapping("/me")
+    public ResponseEntity<UserInfoResponseDto> getMyInfo(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        UserInfoResponseDto response = usersService.getUserInfo(userId);
+        return ResponseEntity.ok(response);
+    }
+
+    //아이디로 검색
+    @GetMapping("/{userHashId}")
+    public ResponseEntity<UserInfoResponseDto> getUserById(@PathVariable String userHashId) {
+        UserInfoResponseDto userInfo = usersService.getUserInfo(userHashId);
+        return ResponseEntity.ok(userInfo);
+    }
+
+    //아름으로 검색
+    @GetMapping("/search")
+    public ResponseEntity<List<UserInfoResponseDto>> getUsersByName(@RequestParam String name) {
+        List<Users> users = usersRepository.findAllByName(name);
+
+        List<UserInfoResponseDto> result = users.stream().map(user -> new UserInfoResponseDto(
+                user.getName(),
+                user.getEmail(),
+                user.getTel(),
+                user.getRegion(),
+                user.getPreferSports(),
+                user.getGender(),
+                user.getProfile(),
+                user.getBirth(),
+                user.getBadmintonScore(),
+                user.getTennisScore(),
+                user.getTableTennisScore(),
+                user.getBowlingScore(),
+                user.getCreatedAt()
+        )).toList();
+
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserInfoResponseDto>> getAllUsers() {
+        List<UserInfoResponseDto> users = usersService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 
 
