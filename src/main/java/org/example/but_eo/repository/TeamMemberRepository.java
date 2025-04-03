@@ -20,6 +20,7 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, TeamMemb
         WHERE tm.user.userHashId = :userId
         AND tm.team.event = :event
     """)
+
     boolean existsByUserAndEvent(@Param("userId") String userId, @Param("event") Team.Event event);
 
     void deleteAllByUser(Users user);

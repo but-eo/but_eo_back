@@ -2,8 +2,10 @@ package org.example.but_eo.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.but_eo.dto.TeamResponse;
 import org.example.but_eo.dto.UpdateTeamRequest;
 import org.example.but_eo.entity.*;
+import org.example.but_eo.repository.TeamInvitationRepository;
 import org.example.but_eo.repository.TeamMemberRepository;
 import org.example.but_eo.repository.TeamRepository;
 import org.example.but_eo.repository.UsersRepository;
@@ -14,8 +16,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +28,7 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final UsersRepository usersRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final TeamInvitationRepository teamInvitationRepository;
 
     private final Set<Team.Event> soloCompatibleEvents = Set.of(
             Team.Event.BADMINTON,
@@ -143,6 +148,29 @@ public class TeamService {
         teamRepository.delete(team);
     }
 
+    //팀 조회
+//    public List<TeamResponse> getAllTeams() {
+//        List<Team> teams = teamRepository.findAll();
+//        return teams.stream()
+//                .map(TeamResponse::from)
+//                .collect(Collectors.toList());
+//    }
+
+    //팀 검색 조건
+    public List<TeamResponse> getFilteredTeams(String event, String region, String teamType, String teamCase, String teamName) {
+        List<Team> all = teamRepository.findAll();
+
+        return all.stream()
+                .filter(team -> event == null || team.getEvent().name().equalsIgnoreCase(event))
+                .filter(team -> region == null || team.getRegion().contains(region))
+                .filter(team -> teamType == null || team.getTeamType().name().equalsIgnoreCase(teamType))
+                .filter(team -> teamCase == null ||
+                        (team.getTeamCase() != null && team.getTeamCase().name().equalsIgnoreCase(teamCase)))
+                .filter(team -> teamName == null || team.getTeamName().contains(teamName))
+                .map(TeamResponse::from)
+                .collect(Collectors.toList());
+    }
+
     //이미지 저장
     private String saveImage(MultipartFile file) {
         try {
@@ -157,4 +185,37 @@ public class TeamService {
             throw new RuntimeException("파일 저장 실패", e);
         }
     }
+
+    //초대
+    @Transactional
+    public void inviteUserToTeam(String teamId, String targetUserId, String leaderId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀이 존재하지 않습니다."));
+
+        // 리더 권한 확인
+        TeamMemberKey key = new TeamMemberKey(leaderId, teamId);
+        TeamMember leader = teamMemberRepository.findById(key)
+                .orElseThrow(() -> new IllegalAccessError("해당 팀의 멤버가 아닙니다."));
+        if (leader.getType() != TeamMember.Type.LEADER) {
+            throw new IllegalAccessError("팀 리더만 초대할 수 있습니다.");
+        }
+
+        // 유저 존재 확인
+        Users user = usersRepository.findByUserHashId(targetUserId);
+        if (user == null) throw new IllegalArgumentException("해당 유저가 존재하지 않습니다.");
+
+        // 중복 초대 방지
+        boolean alreadyInvited = teamInvitationRepository
+                .existsPendingByUserAndTeam(targetUserId, teamId, TeamInvitation.Status.PENDING);
+
+        if (alreadyInvited) {
+            throw new IllegalStateException("이미 이 유저에게 초대가 발송되었습니다.");
+        }
+
+
+        // 초대 저장
+        TeamInvitation invitation = TeamInvitation.create(team, user);
+        teamInvitationRepository.save(invitation);
+    }
+
 }

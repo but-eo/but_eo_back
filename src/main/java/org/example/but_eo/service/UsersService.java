@@ -182,20 +182,15 @@ public class UsersService {
 
         // 팀 멤버 삭제
         teamMemberRepository.deleteAllByUser(user);
-
         // 댓글 삭제
         commentRepository.deleteAllByUser(user);
-
         // 게시글 삭제
         boardRepository.deleteAllByUser(user);
-
         // 채팅 멤버 삭제
         chattingMemberRepository.deleteAllByUser(user);
-
         // 알림 (보낸/받은) 삭제
         notificationRepository.deleteAllByReceiverUser(user);
         notificationRepository.deleteAllBySenderUser(user);
-
         // 파일 삭제 (파일 엔티티가 사용자와 연관돼 있을 경우)
         fileRepository.deleteAllByUserHashId(user);
 
