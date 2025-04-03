@@ -1,6 +1,7 @@
 package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.but_eo.dto.TeamResponse;
 import org.example.but_eo.dto.UpdateTeamRequest;
 import org.example.but_eo.entity.Team;
 import org.example.but_eo.service.TeamService;
@@ -9,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -58,5 +61,20 @@ public class TeamController {
         System.out.println("팀 삭제 성공");
         return ResponseEntity.ok("팀 삭제 완료");
     }
+
+    //팀 전체 조회(아무 조건 없을때), 팀 검색 조건(조건 있으면 필터링)
+    @GetMapping
+    public ResponseEntity<List<TeamResponse>> getTeamsWithFilter(
+            @RequestParam(required = false) String event,
+            @RequestParam(required = false) String region,
+            @RequestParam(required = false) String teamType,
+            @RequestParam(required = false) String teamCase,
+            @RequestParam(required = false) String teamName) {
+
+        List<TeamResponse> teams = teamService.getFilteredTeams(event, region, teamType, teamCase, teamName);
+        return ResponseEntity.ok(teams);
+    }
+
+
 
 }

@@ -2,6 +2,7 @@ package org.example.but_eo.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.but_eo.dto.TeamResponse;
 import org.example.but_eo.dto.UpdateTeamRequest;
 import org.example.but_eo.entity.*;
 import org.example.but_eo.repository.TeamMemberRepository;
@@ -14,8 +15,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -141,6 +144,29 @@ public class TeamService {
         // 팀원 먼저 삭제 → 팀 삭제
         teamMemberRepository.deleteAll(team.getTeamMemberList());
         teamRepository.delete(team);
+    }
+
+    //팀 조회
+//    public List<TeamResponse> getAllTeams() {
+//        List<Team> teams = teamRepository.findAll();
+//        return teams.stream()
+//                .map(TeamResponse::from)
+//                .collect(Collectors.toList());
+//    }
+
+    //팀 검색 조건
+    public List<TeamResponse> getFilteredTeams(String event, String region, String teamType, String teamCase, String teamName) {
+        List<Team> all = teamRepository.findAll();
+
+        return all.stream()
+                .filter(team -> event == null || team.getEvent().name().equalsIgnoreCase(event))
+                .filter(team -> region == null || team.getRegion().contains(region))
+                .filter(team -> teamType == null || team.getTeamType().name().equalsIgnoreCase(teamType))
+                .filter(team -> teamCase == null ||
+                        (team.getTeamCase() != null && team.getTeamCase().name().equalsIgnoreCase(teamCase)))
+                .filter(team -> teamName == null || team.getTeamName().contains(teamName))
+                .map(TeamResponse::from)
+                .collect(Collectors.toList());
     }
 
     //이미지 저장
