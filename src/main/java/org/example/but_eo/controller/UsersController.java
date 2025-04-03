@@ -2,27 +2,23 @@ package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
-import org.example.but_eo.dto.KakaoLoginDto;
-import org.example.but_eo.dto.UserLoginRequestDto;
-import org.example.but_eo.dto.UserLoginResponseDto;
-import org.example.but_eo.dto.UserRegisterRequestDto;
+import org.example.but_eo.dto.*;
 import org.example.but_eo.entity.Users;
 import org.example.but_eo.service.UsersService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.Authentication;
-import java.util.UUID;
-
-import java.time.LocalDateTime;
-import java.util.Map;
-
 import org.example.but_eo.util.JwtUtil;
 import org.example.but_eo.repository.UsersRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,10 +38,8 @@ public class UsersController {
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDto> login(@RequestBody UserLoginRequestDto dto) {
-//        log.info("로그인 요청 들어옴 : 이메일 = " +dto.getEmail());
         System.out.println("로그인 요청 들어옴 : 이메일 = " + dto.getEmail());
         UserLoginResponseDto response = usersService.login(dto);
-//        log.info("로그인 응답 보냄 : " + response);
         System.out.println("로그인 응답 보냄 : " + response);
         return ResponseEntity.ok(response);
     }
@@ -56,6 +50,7 @@ public class UsersController {
             String userHashId = UUID.randomUUID().toString();
             String userPassword = UUID.randomUUID().toString();
             Users existingUser = usersRepository.findByEmail(kakaoLoginDto.getEmail());
+
             if (existingUser == null) {
                 Users newUser = new Users();
                 newUser.setUserHashId(userHashId);
@@ -70,16 +65,13 @@ public class UsersController {
                 newUser.setState(Users.State.ACTIVE);
                 newUser.setCreatedAt(LocalDateTime.now());
                 usersRepository.save(newUser);
-            }
-            else { // 기존 사용자가 있으면 정보 업데이트
-                existingUser.setName(kakaoLoginDto.getNickName()); // 닉네임 변경 가능
+            } else {
+                existingUser.setName(kakaoLoginDto.getNickName());
                 existingUser.setProfile(kakaoLoginDto.getProfileImage());
                 existingUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
-
                 usersRepository.save(existingUser);
             }
 
-            System.out.println("카카오 로그인 요청 수신 : " + kakaoLoginDto);
             return ResponseEntity.ok("로그인 성공 : " + kakaoLoginDto.getNickName());
 
         } catch (Exception e) {
@@ -110,20 +102,77 @@ public class UsersController {
         }
 
         String newAccessToken = jwtUtil.generateAccessToken(userId);
+        return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+    }
 
-        return ResponseEntity.ok().body(Map.of(
-                "accessToken", newAccessToken
-        ));
+    @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateUser(@ModelAttribute UserUpdateRequestDto request, Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        usersService.updateUser(userId, request);
+        return ResponseEntity.ok("회원 정보 수정 완료");
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteUser(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        usersService.deleteUser(userId);
+        return ResponseEntity.ok("회원 탈퇴 완료");
+    }
+
+    @DeleteMapping("/permanent")
+    public ResponseEntity<?> deleteUserPermanently(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        usersService.deleteUserPermanently(userId);
+        return ResponseEntity.ok("계정이 완전히 삭제되었습니다.");
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserInfoResponseDto> getMyInfo(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        UserInfoResponseDto response = usersService.getUserInfo(userId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{userHashId}")
+    public ResponseEntity<UserInfoResponseDto> getUserById(@PathVariable String userHashId) {
+        UserInfoResponseDto userInfo = usersService.getUserInfo(userHashId);
+        return ResponseEntity.ok(userInfo);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<UserInfoResponseDto>> getUsersByName(@RequestParam String name) {
+        List<Users> users = usersRepository.findAllByName(name);
+        List<UserInfoResponseDto> result = users.stream().map(user -> new UserInfoResponseDto(
+                user.getName(),
+                user.getEmail(),
+                user.getTel(),
+                user.getRegion(),
+                user.getPreferSports(),
+                user.getGender(),
+                user.getProfile(),
+                user.getBirth(),
+                user.getBadmintonScore(),
+                user.getTennisScore(),
+                user.getTableTennisScore(),
+                user.getBowlingScore(),
+                user.getCreatedAt()
+        )).toList();
+
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserInfoResponseDto>> getAllUsers() {
+        List<UserInfoResponseDto> users = usersService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 
     @RestController
     @RequestMapping("/oauth2")
-    public class OAuth2Controller {
+    public static class OAuth2Controller {
         @GetMapping("/success")
         public String oauthLoginSuccess(@AuthenticationPrincipal OAuth2User oAuth2User) {
             return "소셜 로그인 성공! 유저 이름: " + oAuth2User.getAttribute("name");
         }
     }
-
-
 }

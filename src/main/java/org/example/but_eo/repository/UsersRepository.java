@@ -3,6 +3,7 @@ package org.example.but_eo.repository;
 import org.example.but_eo.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import java.util.List;
 
 @Repository
 public interface UsersRepository extends JpaRepository<Users, String> {
@@ -17,4 +18,6 @@ public interface UsersRepository extends JpaRepository<Users, String> {
     Users findByEmail(String email);
 
     Users findByUserHashId(String userHashId);
+
+    List<Users> findAllByName(String name);
 }
