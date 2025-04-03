@@ -33,6 +33,7 @@ public class UsersService {
     private final ChattingMemberRepository chattingMemberRepository;
     private final NotificationRepository notificationRepository;
     private final FileRepository fileRepository;
+    private final TeamInvitationRepository teamInvitationRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -161,6 +162,23 @@ public class UsersService {
             }
         }
 
+        // 팀 멤버 삭제
+        teamMemberRepository.deleteAllByUser(user);
+        // 댓글 삭제
+        commentRepository.deleteAllByUser(user);
+        // 게시글 삭제
+        boardRepository.deleteAllByUser(user);
+        // 채팅 멤버 삭제
+        chattingMemberRepository.deleteAllByUser(user);
+        // 알림 (보낸/받은) 삭제
+        notificationRepository.deleteAllByReceiverUser(user);
+        notificationRepository.deleteAllBySenderUser(user);
+        // 파일 삭제 (파일 엔티티가 사용자와 연관돼 있을 경우)
+        fileRepository.deleteAllByUserHashId(user);
+
+        // 받은 초대 전부 삭제
+        teamInvitationRepository.deleteAllByUser(user);
+
         // 실제 삭제 or soft delete (상태만 변경) 일단은 삭제 대기로
         user.setState(Users.State.DELETED_WAIT);
         usersRepository.save(user);
@@ -179,20 +197,6 @@ public class UsersService {
         if (user.getState() != Users.State.DELETED_WAIT) {
             throw new IllegalStateException("삭제 대기 상태인 유저만 완전 삭제할 수 있습니다.");
         }
-
-        // 팀 멤버 삭제
-        teamMemberRepository.deleteAllByUser(user);
-        // 댓글 삭제
-        commentRepository.deleteAllByUser(user);
-        // 게시글 삭제
-        boardRepository.deleteAllByUser(user);
-        // 채팅 멤버 삭제
-        chattingMemberRepository.deleteAllByUser(user);
-        // 알림 (보낸/받은) 삭제
-        notificationRepository.deleteAllByReceiverUser(user);
-        notificationRepository.deleteAllBySenderUser(user);
-        // 파일 삭제 (파일 엔티티가 사용자와 연관돼 있을 경우)
-        fileRepository.deleteAllByUserHashId(user);
 
         //유저 삭제
         usersRepository.delete(user);

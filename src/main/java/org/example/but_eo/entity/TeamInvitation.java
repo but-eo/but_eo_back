@@ -33,7 +33,6 @@ public class TeamInvitation {
 
     private LocalDateTime createdAt;
 
-    // TeamInvitation.java
     public static TeamInvitation create(Team team, Users user) {
         return TeamInvitation.builder()
                 .team(team)

@@ -104,6 +104,15 @@ public class TeamService {
             if (soloCompatibleEvents.contains(currentEvent)) {
                 try {
                     Team.Team_Type newType = Team.Team_Type.valueOf(req.getTeamType());
+                    Team.Team_Type currentType = team.getTeamType();
+
+                    // TEAM -> SOLO로 바꾸려는 경우, 팀원 수 확인
+                    if (currentType == Team.Team_Type.TEAM && newType == Team.Team_Type.SOLO) {
+                        long memberCount = teamMemberRepository.countByTeam_TeamId(teamId);
+                        if (memberCount > 1) {
+                            throw new IllegalStateException("팀 타입을 SOLO로 바꾸려면 리더 혼자만 있어야 합니다.");
+                        }
+                    }
                     team.setTeamType(newType);
                 } catch (IllegalArgumentException e) {
                     throw new IllegalArgumentException("teamType은 SOLO 또는 TEAM 중 하나여야 합니다.");
@@ -139,11 +148,13 @@ public class TeamService {
         TeamMemberKey key = new TeamMemberKey(userId, teamId);
         TeamMember member = teamMemberRepository.findById(key)
                 .orElseThrow(() -> new IllegalStateException("팀에 속해있지 않습니다."));
+
         if (member.getType() != TeamMember.Type.LEADER) {
             throw new IllegalAccessError("팀 삭제는 리더만 할 수 있습니다.");
         }
 
-        // 팀원 먼저 삭제 → 팀 삭제
+        // 초대 삭제 -> 팀원 삭제 -> 팀 삭제
+        teamInvitationRepository.deleteAllByTeam(team);
         teamMemberRepository.deleteAll(team.getTeamMemberList());
         teamRepository.delete(team);
     }
@@ -203,7 +214,12 @@ public class TeamService {
         // 유저 존재 확인
         Users user = usersRepository.findByUserHashId(targetUserId);
         if (user == null) throw new IllegalArgumentException("해당 유저가 존재하지 않습니다.");
-
+        
+        // 팀 타입이 솔로면 초대 불가
+        if (team.getTeamType() == Team.Team_Type.SOLO) {
+            throw new IllegalStateException("SOLO 팀은 초대할 수 없습니다.");
+        }
+        
         // 중복 초대 방지
         boolean alreadyInvited = teamInvitationRepository
                 .existsPendingByUserAndTeam(targetUserId, teamId, TeamInvitation.Status.PENDING);
