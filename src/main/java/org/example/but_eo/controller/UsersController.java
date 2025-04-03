@@ -2,17 +2,25 @@ package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
+import org.example.but_eo.dto.KakaoLoginDto;
 import org.example.but_eo.dto.UserLoginRequestDto;
 import org.example.but_eo.dto.UserLoginResponseDto;
 import org.example.but_eo.dto.UserRegisterRequestDto;
 import org.example.but_eo.entity.Users;
 import org.example.but_eo.service.UsersService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+import java.util.UUID;
+
+import java.time.LocalDateTime;
 import java.util.Map;
+
 import org.example.but_eo.util.JwtUtil;
 import org.example.but_eo.repository.UsersRepository;
 
@@ -35,11 +43,49 @@ public class UsersController {
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDto> login(@RequestBody UserLoginRequestDto dto) {
 //        log.info("로그인 요청 들어옴 : 이메일 = " +dto.getEmail());
-        System.out.println("로그인 요청 들어옴 : 이메일 = " +dto.getEmail());
+        System.out.println("로그인 요청 들어옴 : 이메일 = " + dto.getEmail());
         UserLoginResponseDto response = usersService.login(dto);
 //        log.info("로그인 응답 보냄 : " + response);
         System.out.println("로그인 응답 보냄 : " + response);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/kakao/login")
+    public ResponseEntity<String> kakaologin(@RequestBody KakaoLoginDto kakaoLoginDto) {
+        try {
+            String userHashId = UUID.randomUUID().toString();
+            String userPassword = UUID.randomUUID().toString();
+            Users existingUser = usersRepository.findByEmail(kakaoLoginDto.getEmail());
+            if (existingUser == null) {
+                Users newUser = new Users();
+                newUser.setUserHashId(userHashId);
+                newUser.setName(kakaoLoginDto.getNickName());
+                newUser.setPassword(userPassword);
+                newUser.setEmail(kakaoLoginDto.getEmail());
+                newUser.setProfile(kakaoLoginDto.getProfileImage());
+                newUser.setGender(kakaoLoginDto.getGender());
+                newUser.setBirth(kakaoLoginDto.getBirthYear());
+                newUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
+                newUser.setDivision(Users.Division.USER);
+                newUser.setState(Users.State.ACTIVE);
+                newUser.setCreatedAt(LocalDateTime.now());
+                usersRepository.save(newUser);
+            }
+            else { // 기존 사용자가 있으면 정보 업데이트
+                existingUser.setName(kakaoLoginDto.getNickName()); // 닉네임 변경 가능
+                existingUser.setProfile(kakaoLoginDto.getProfileImage());
+                existingUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
+
+                usersRepository.save(existingUser);
+            }
+
+            System.out.println("카카오 로그인 요청 수신 : " + kakaoLoginDto);
+            return ResponseEntity.ok("로그인 성공 : " + kakaoLoginDto.getNickName());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그인 실패");
+        }
     }
 
     @GetMapping("/my-info")
@@ -49,7 +95,7 @@ public class UsersController {
     }
 
     @PostMapping("/refresh")
-        public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String refreshToken) {
+    public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String refreshToken) {
         String token = refreshToken.replace("Bearer ", "");
 
         if (!jwtUtil.validateToken(token)) {
@@ -78,8 +124,6 @@ public class UsersController {
             return "소셜 로그인 성공! 유저 이름: " + oAuth2User.getAttribute("name");
         }
     }
-
-
 
 
 }
