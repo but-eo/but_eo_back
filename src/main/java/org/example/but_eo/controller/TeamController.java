@@ -1,6 +1,7 @@
 package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.but_eo.dto.TeamInviteRequest;
 import org.example.but_eo.dto.TeamResponse;
 import org.example.but_eo.dto.UpdateTeamRequest;
 import org.example.but_eo.entity.Team;
@@ -75,6 +76,16 @@ public class TeamController {
         return ResponseEntity.ok(teams);
     }
 
+    //초대
+    @PostMapping("/{teamId}/invite")
+    public ResponseEntity<String> inviteUserToTeam(
+            @PathVariable String teamId,
+            @RequestBody TeamInviteRequest request,
+            Authentication authentication) {
 
+        String leaderId = (String) authentication.getPrincipal();
+        teamService.inviteUserToTeam(teamId, request.getUserId(), leaderId);
+        return ResponseEntity.ok("초대 성공");
+    }
 
 }
