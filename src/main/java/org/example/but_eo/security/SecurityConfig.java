@@ -2,6 +2,7 @@ package org.example.but_eo.security;
 
 import java.util.List;
 
+import org.example.but_eo.service.CustomOAuth2UserService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
@@ -41,6 +44,16 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/", true) // 로그인 성공 시 이동 페이지
                         .permitAll()
                 )
+
+                .oauth2Login(oauth2 -> oauth2   //
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService) // OAuth2UserService 연결
+                        )
+                        .successHandler(customOAuth2SuccessHandler)
+                        .defaultSuccessUrl("/", true) // 로그인 성공 후 이동할 URL
+                        .failureUrl("/login?error")   // 실패 시 이동할 URL
+                )
+
                 .sessionManagement(session  //서버가 세션을 사용하지 않고 JWT 기반으로 인증하도록
                         -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -49,7 +62,9 @@ public class SecurityConfig {
                         headerConfig.frameOptions((frameOptionsConfig) ->
                                 frameOptionsConfig.disable())
                 )
+
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         ; //h2가 iframe 사용해야하므로 X-frame-option 비활성화
         return http.build();
     }
