@@ -2,9 +2,10 @@ package org.example.but_eo.repository;
 
 import org.example.but_eo.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
-
+import org.springframework.stereotype.Repository;
 import java.util.List;
 
+@Repository
 public interface UsersRepository extends JpaRepository<Users, String> {
 
     // 이메일 중복 확인용

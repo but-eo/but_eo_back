@@ -58,8 +58,11 @@ dependencies {
 
     //MySql
     implementation 'mysql:mysql-connector-java:8.0.33'
-}
 
+    //chatting
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework:spring-messaging'
+}
 
 
 tasks.named('test') {

@@ -1,26 +1,24 @@
 package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
-
 import lombok.extern.slf4j.Slf4j;
-import org.example.but_eo.dto.UserLoginRequestDto;
-import org.example.but_eo.dto.UserLoginResponseDto;
-import org.example.but_eo.dto.UserRegisterRequestDto;
-import org.example.but_eo.dto.UserUpdateRequestDto;
-
+import org.example.but_eo.dto.*;
 import org.example.but_eo.entity.Users;
 import org.example.but_eo.service.UsersService;
+import org.example.but_eo.util.JwtUtil;
+import org.example.but_eo.repository.UsersRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import org.example.but_eo.util.JwtUtil;
-import org.example.but_eo.repository.UsersRepository;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,12 +38,46 @@ public class UsersController {
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDto> login(@RequestBody UserLoginRequestDto dto) {
-//        log.info("로그인 요청 들어옴 : 이메일 = " +dto.getEmail());
-        System.out.println("로그인 요청 들어옴 : 이메일 = " +dto.getEmail());
+        System.out.println("로그인 요청 들어옴 : 이메일 = " + dto.getEmail());
         UserLoginResponseDto response = usersService.login(dto);
-//        log.info("로그인 응답 보냄 : " + response);
         System.out.println("로그인 응답 보냄 : " + response);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/kakao/login")
+    public ResponseEntity<String> kakaologin(@RequestBody KakaoLoginDto kakaoLoginDto) {
+        try {
+            String userHashId = UUID.randomUUID().toString();
+            String userPassword = UUID.randomUUID().toString();
+            Users existingUser = usersRepository.findByEmail(kakaoLoginDto.getEmail());
+
+            if (existingUser == null) {
+                Users newUser = new Users();
+                newUser.setUserHashId(userHashId);
+                newUser.setName(kakaoLoginDto.getNickName());
+                newUser.setPassword(userPassword);
+                newUser.setEmail(kakaoLoginDto.getEmail());
+                newUser.setProfile(kakaoLoginDto.getProfileImage());
+                newUser.setGender(kakaoLoginDto.getGender());
+                newUser.setBirth(kakaoLoginDto.getBirthYear());
+                newUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
+                newUser.setDivision(Users.Division.USER);
+                newUser.setState(Users.State.ACTIVE);
+                newUser.setCreatedAt(LocalDateTime.now());
+                usersRepository.save(newUser);
+            } else {
+                existingUser.setName(kakaoLoginDto.getNickName());
+                existingUser.setProfile(kakaoLoginDto.getProfileImage());
+                existingUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
+                usersRepository.save(existingUser);
+            }
+
+            return ResponseEntity.ok("로그인 성공 : " + kakaoLoginDto.getNickName());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그인 실패");
+        }
     }
 
     @GetMapping("/my-info")
@@ -55,7 +87,7 @@ public class UsersController {
     }
 
     @PostMapping("/refresh")
-        public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String refreshToken) {
+    public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String refreshToken) {
         String token = refreshToken.replace("Bearer ", "");
 
         if (!jwtUtil.validateToken(token)) {
@@ -70,33 +102,16 @@ public class UsersController {
         }
 
         String newAccessToken = jwtUtil.generateAccessToken(userId);
-
-        return ResponseEntity.ok().body(Map.of(
-                "accessToken", newAccessToken
-        ));
-    }
-
-    @RestController
-    @RequestMapping("/oauth2")
-    public class OAuth2Controller {
-        @GetMapping("/success")
-        public String oauthLoginSuccess(@AuthenticationPrincipal OAuth2User oAuth2User) {
-            return "소셜 로그인 성공! 유저 이름: " + oAuth2User.getAttribute("name");
-        }
+        return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
     }
 
     @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateUser(
-            @ModelAttribute UserUpdateRequestDto request,
-            Authentication authentication) {
-
+    public ResponseEntity<?> updateUser(@ModelAttribute UserUpdateRequestDto request, Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
         usersService.updateUser(userId, request);
-
         return ResponseEntity.ok("회원 정보 수정 완료");
     }
 
-    //상태 변경
     @DeleteMapping("/delete")
     public ResponseEntity<String> deleteUser(Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
@@ -104,7 +119,6 @@ public class UsersController {
         return ResponseEntity.ok("회원 탈퇴 완료");
     }
 
-    //영구 삭제
     @DeleteMapping("/permanent")
     public ResponseEntity<?> deleteUserPermanently(Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
@@ -112,7 +126,6 @@ public class UsersController {
         return ResponseEntity.ok("계정이 완전히 삭제되었습니다.");
     }
 
-    //자기 자신 조회
     @GetMapping("/me")
     public ResponseEntity<UserInfoResponseDto> getMyInfo(Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
@@ -120,18 +133,15 @@ public class UsersController {
         return ResponseEntity.ok(response);
     }
 
-    //아이디로 검색
     @GetMapping("/{userHashId}")
     public ResponseEntity<UserInfoResponseDto> getUserById(@PathVariable String userHashId) {
         UserInfoResponseDto userInfo = usersService.getUserInfo(userHashId);
         return ResponseEntity.ok(userInfo);
     }
 
-    //아름으로 검색
     @GetMapping("/search")
     public ResponseEntity<List<UserInfoResponseDto>> getUsersByName(@RequestParam String name) {
         List<Users> users = usersRepository.findAllByName(name);
-
         List<UserInfoResponseDto> result = users.stream().map(user -> new UserInfoResponseDto(
                 user.getName(),
                 user.getEmail(),
@@ -157,5 +167,12 @@ public class UsersController {
         return ResponseEntity.ok(users);
     }
 
-
+    @RestController
+    @RequestMapping("/oauth2")
+    public static class OAuth2Controller {
+        @GetMapping("/success")
+        public String oauthLoginSuccess(@AuthenticationPrincipal OAuth2User oAuth2User) {
+            return "소셜 로그인 성공! 유저 이름: " + oAuth2User.getAttribute("name");
+        }
+    }
 }
