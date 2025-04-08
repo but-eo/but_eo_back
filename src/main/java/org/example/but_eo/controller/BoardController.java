@@ -9,6 +9,8 @@ import org.example.but_eo.service.BoardService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,6 +51,34 @@ public class BoardController {
         return ResponseEntity.ok(detail);
     }
 
+    // 게시글 수정
+    @PatchMapping(value = "/{boardId}/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateBoard(@PathVariable String boardId,
+                                         @RequestPart BoardRequest request,
+                                         @RequestPart(required = false) List<MultipartFile> files) {
+        String userId = SecurityUtil.getCurrentUserId(); // JWT에서 유저 ID 추출
+        boardService.updateBoard(boardId, request, files, userId);
+        return ResponseEntity.ok("게시글 수정 완료");
+    }
+
+    // 게시글 삭제
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity<?> deleteBoard(@PathVariable String boardId) {
+        String userId = SecurityUtil.getCurrentUserId(); // JWT에서 유저 ID 추출
+        boardService.deleteBoard(boardId, userId);
+        return ResponseEntity.ok("게시글 삭제 완료");
+    }
+
+
+    public class SecurityUtil {
+        public static String getCurrentUserId() {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                throw new RuntimeException("인증 정보 없음");
+            }
+            return authentication.getName(); // 또는 JWT claim 기반으로 userId 추출
+        }
+    }
 
 }
 

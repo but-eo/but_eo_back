@@ -1,5 +1,6 @@
 package org.example.but_eo.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.but_eo.dto.BoardDetailResponse;
 import org.example.but_eo.dto.BoardRequest;
@@ -23,6 +24,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class BoardService {
 
@@ -97,6 +99,40 @@ public class BoardService {
         );
     }
 
+    // 게시글 수정
+    public void updateBoard(String boardId, BoardRequest request, List<MultipartFile> files, String userId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+
+        if (!board.getUser().getUserHashId().equals(userId)) {
+            throw new RuntimeException("작성자만 수정할 수 있습니다.");
+        }
+
+        board.setTitle(request.getTitle());
+        board.setContent(request.getContent());
+        board.setState(request.getState());
+        board.setUpdatedAt(LocalDateTime.now());
+
+        boardRepository.save(board);
+
+        if (files != null && !files.isEmpty()) {
+            boardMappingRepository.deleteByBoard_BoardId(boardId);
+            fileService.uploadAndMapFilesToBoard(files, board);
+        }
+    }
+
+    // 게시글 삭제
+    public void deleteBoard(String boardId, String userId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+
+        if (!board.getUser().getUserHashId().equals(userId)) {
+            throw new RuntimeException("작성자만 삭제할 수 있습니다.");
+        }
+
+        board.setState(Board.State.DELETE);
+        boardRepository.save(board);
+    }
 
 }
 
