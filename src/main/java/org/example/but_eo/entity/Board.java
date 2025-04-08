@@ -29,6 +29,13 @@ public class Board {
         PUBLIC, PRIVATE, DELETE
     } //공개, 비공개, 삭제
 
+    public enum Category{
+        FREE, REVIEW, TEAM, MEMBER, NOTIFICATION
+    }
+
+    @Column(nullable = false)
+    private Category category;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private State state;
