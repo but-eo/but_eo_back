@@ -115,8 +115,8 @@ public class UsersService {
         if (dto.getName() != null) user.setName(dto.getName());
         if (dto.getRegion() != null) user.setRegion(dto.getRegion());
         if (dto.getPreferSports() != null) user.setPreferSports(dto.getPreferSports());
-        if (dto.getTel() != null) user.setTel(dto.getTel());
-        if (dto.getGender() != null) user.setGender(dto.getGender());
+       //  if (dto.getTel() != null) user.setTel(dto.getTel());
+        // if (dto.getGender() != null) user.setGender(dto.getGender());
 
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));

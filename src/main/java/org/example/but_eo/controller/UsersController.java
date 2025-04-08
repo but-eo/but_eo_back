@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -44,41 +45,86 @@ public class UsersController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/kakao/login")
-    public ResponseEntity<String> kakaologin(@RequestBody KakaoLoginDto kakaoLoginDto) {
-        try {
-            String userHashId = UUID.randomUUID().toString();
-            String userPassword = UUID.randomUUID().toString();
-            Users existingUser = usersRepository.findByEmail(kakaoLoginDto.getEmail());
+//    @PostMapping("/kakao/login")
+//    public ResponseEntity<String> kakaologin(@RequestBody KakaoLoginDto kakaoLoginDto) {
+//        try {
+//            String userHashId = UUID.randomUUID().toString();
+//            String userPassword = UUID.randomUUID().toString();
+//            Users existingUser = usersRepository.findByEmail(kakaoLoginDto.getEmail());
+//
+//            if (existingUser == null) {
+//                Users newUser = new Users();
+//                newUser.setUserHashId(userHashId);
+//                newUser.setName(kakaoLoginDto.getNickName());
+//                newUser.setPassword(userPassword);
+//                newUser.setEmail(kakaoLoginDto.getEmail());
+//                newUser.setProfile(kakaoLoginDto.getProfileImage());
+//                newUser.setGender(kakaoLoginDto.getGender());
+//                newUser.setBirth(kakaoLoginDto.getBirthYear());
+//                newUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
+//                newUser.setDivision(Users.Division.USER);
+//                newUser.setState(Users.State.ACTIVE);
+//                newUser.setCreatedAt(LocalDateTime.now());
+//                usersRepository.save(newUser);
+//            } else {
+//                existingUser.setName(kakaoLoginDto.getNickName());
+//                existingUser.setProfile(kakaoLoginDto.getProfileImage());
+//                existingUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
+//                usersRepository.save(existingUser);
+//            }
+//            Map<String, String> result = new HashMap<>();
+//            result.put("accessToken", jwtToken);  // 너가 발급한 JWT 변수
+//            return ResponseEntity.ok(result);
+//
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그인 실패");
+//        }
+//    }
+@PostMapping("/kakao/login")
+public ResponseEntity<Map<String, String>> kakaologin(@RequestBody KakaoLoginDto kakaoLoginDto) {
+    try {
+        String userHashId = UUID.randomUUID().toString();
+        String userPassword = UUID.randomUUID().toString();
+        Users existingUser = usersRepository.findByEmail(kakaoLoginDto.getEmail());
 
-            if (existingUser == null) {
-                Users newUser = new Users();
-                newUser.setUserHashId(userHashId);
-                newUser.setName(kakaoLoginDto.getNickName());
-                newUser.setPassword(userPassword);
-                newUser.setEmail(kakaoLoginDto.getEmail());
-                newUser.setProfile(kakaoLoginDto.getProfileImage());
-                newUser.setGender(kakaoLoginDto.getGender());
-                newUser.setBirth(kakaoLoginDto.getBirthYear());
-                newUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
-                newUser.setDivision(Users.Division.USER);
-                newUser.setState(Users.State.ACTIVE);
-                newUser.setCreatedAt(LocalDateTime.now());
-                usersRepository.save(newUser);
-            } else {
-                existingUser.setName(kakaoLoginDto.getNickName());
-                existingUser.setProfile(kakaoLoginDto.getProfileImage());
-                existingUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
-                usersRepository.save(existingUser);
-            }
-
-            return ResponseEntity.ok("로그인 성공 : " + kakaoLoginDto.getNickName());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그인 실패");
+        if (existingUser == null) {
+            Users newUser = new Users();
+            newUser.setUserHashId(userHashId);
+            newUser.setName(kakaoLoginDto.getNickName());
+            newUser.setPassword(userPassword); // 비밀번호는 무작위
+            newUser.setEmail(kakaoLoginDto.getEmail());
+            newUser.setProfile(kakaoLoginDto.getProfileImage());
+            newUser.setGender(kakaoLoginDto.getGender());
+            newUser.setBirth(kakaoLoginDto.getBirthYear());
+            newUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
+            newUser.setDivision(Users.Division.USER);
+            newUser.setState(Users.State.ACTIVE);
+            newUser.setCreatedAt(LocalDateTime.now());
+            usersRepository.save(newUser);
+        } else {
+            existingUser.setName(kakaoLoginDto.getNickName());
+            existingUser.setProfile(kakaoLoginDto.getProfileImage());
+            existingUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
+            usersRepository.save(existingUser);
         }
+
+        // ✅ 여기서 JWT 생성
+        Users savedUser = usersRepository.findByEmail(kakaoLoginDto.getEmail());
+        String jwtToken = jwtUtil.generateAccessToken(savedUser.getUserHashId());
+
+        Map<String, String> result = new HashMap<>();
+        result.put("accessToken", jwtToken);
+        return ResponseEntity.ok(result);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "로그인 실패"));
     }
+}
+
+
 
     @GetMapping("/my-info")
     public ResponseEntity<String> myInfo(Authentication authentication) {
