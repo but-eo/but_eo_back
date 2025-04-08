@@ -33,6 +33,9 @@ public class Board {
         FREE, REVIEW, TEAM, MEMBER, NOTIFICATION
     }
 
+    @Column(nullable = false)
+    private Category category;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private State state;
