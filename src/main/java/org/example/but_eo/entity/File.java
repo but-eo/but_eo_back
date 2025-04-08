@@ -43,4 +43,12 @@ public class File {
     @OneToMany(mappedBy = "file")
     private List<StadiumMapping> stadiumMappingList = new ArrayList<>();
     //TODO: 유저 테이블 연결
+
+    public File(String fileId, Users user, String fileName, String filePath, LocalDateTime createdAt) {
+        this.fileId = fileId;
+        this.userHashId = user;
+        this.fileName = fileName;
+        this.filePath = filePath;
+        this.createdAt = createdAt;
+    }
 }
