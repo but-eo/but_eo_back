@@ -69,6 +69,14 @@ public class BoardController {
         return ResponseEntity.ok("게시글 삭제 완료");
     }
 
+    //게시글 완전 삭제
+    @DeleteMapping("/{boardId}/hard")
+    public ResponseEntity<?> deleteBoardHard(@PathVariable String boardId) {
+        String userId = SecurityUtil.getCurrentUserId();
+        boardService.deleteBoardHard(boardId, userId);
+        return ResponseEntity.ok("게시글 완전 삭제 완료");
+    }
+
 
     public class SecurityUtil {
         public static String getCurrentUserId() {
