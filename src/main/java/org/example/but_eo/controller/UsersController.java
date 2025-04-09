@@ -63,12 +63,14 @@ public class UsersController {
                 newUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
                 newUser.setDivision(Users.Division.USER);
                 newUser.setState(Users.State.ACTIVE);
+                newUser.setLoginType(Users.LoginType.KAKAO);
                 newUser.setCreatedAt(LocalDateTime.now());
                 usersRepository.save(newUser);
             } else {
                 existingUser.setName(kakaoLoginDto.getNickName());
                 existingUser.setProfile(kakaoLoginDto.getProfileImage());
                 existingUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
+                existingUser.setLoginType(Users.LoginType.KAKAO);
                 usersRepository.save(existingUser);
             }
 
@@ -175,4 +177,13 @@ public class UsersController {
             return "소셜 로그인 성공! 유저 이름: " + oAuth2User.getAttribute("name");
         }
     }
+    
+    //로그아웃
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        usersService.logout(userId);
+        return ResponseEntity.ok("로그아웃 성공");
+    }
+
 }
