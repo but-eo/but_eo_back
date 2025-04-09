@@ -63,8 +63,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework:spring-messaging'
 
-    //redis.
+    //Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    //JSON 직렬화
+    implementation "com.fasterxml.jackson.core:jackson-databind"
 }
 
 

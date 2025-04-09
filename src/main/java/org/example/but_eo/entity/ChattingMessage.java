@@ -34,14 +34,6 @@ public class ChattingMessage {
     @Column(nullable = false)
     private boolean readCheck;
 
-    public enum Division{
-        USER, ADMIN, BUSINESS
-    }; //유저, 관리자, 사업자
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Division division;
-
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
