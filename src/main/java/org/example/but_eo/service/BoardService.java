@@ -5,11 +5,14 @@ import lombok.RequiredArgsConstructor;
 import org.example.but_eo.dto.BoardDetailResponse;
 import org.example.but_eo.dto.BoardRequest;
 import org.example.but_eo.dto.BoardResponse;
+import org.example.but_eo.dto.CommentResponse;
 import org.example.but_eo.entity.Board;
 import org.example.but_eo.entity.BoardMapping;
+import org.example.but_eo.entity.Comment;
 import org.example.but_eo.entity.Users;
 import org.example.but_eo.repository.BoardMappingRepository;
 import org.example.but_eo.repository.BoardRepository;
+import org.example.but_eo.repository.CommentRepository;
 import org.example.but_eo.repository.UsersRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +34,7 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final UsersRepository usersRepository;
     private final BoardMappingRepository boardMappingRepository;
+    private final CommentRepository commentRepository;
     private final FileService fileService; // 업로드 및 BoardMapping 처리용
 
     public void createBoard(BoardRequest request, List<MultipartFile> files, String userId) {
@@ -84,6 +88,19 @@ public class BoardService {
                 .map(mapping -> mapping.getFile().getFilePath())
                 .collect(Collectors.toList());
 
+        List<Comment> commentList = commentRepository.findByBoard_BoardIdAndStateOrderByCreateAtDesc(
+                boardId, Comment.State.PUBLIC
+        );
+
+        List<CommentResponse> commentResponses = commentList.stream()
+                .map(comment -> new CommentResponse(
+                        comment.getCommentId(),
+                        comment.getUser().getName(),
+                        comment.getContent(),
+                        comment.getCreateAt(),
+                        comment.getLikeCount()
+                )).toList();
+
         return new BoardDetailResponse(
                 board.getBoardId(),
                 board.getTitle(),
@@ -95,9 +112,11 @@ public class BoardService {
                 board.getLikeCount(),
                 board.getCommentCount(),
                 board.getCreatedAt(),
-                board.getUpdatedAt()
+                board.getUpdatedAt(),
+                commentResponses
         );
     }
+
 
     // 게시글 수정
     public void updateBoard(String boardId, BoardRequest request, List<MultipartFile> files, String userId) {
@@ -133,6 +152,27 @@ public class BoardService {
         board.setState(Board.State.DELETE);
         boardRepository.save(board);
     }
+
+    //게시글 완전 삭제
+    @Transactional
+    public void deleteBoardHard(String boardId, String userId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+
+        if (!board.getUser().getUserHashId().equals(userId)) {
+            throw new RuntimeException("작성자만 삭제할 수 있습니다.");
+        }
+
+        // 1. 댓글 삭제
+        commentRepository.deleteAllByBoard_BoardId(boardId);
+
+        // 2. 파일 매핑 삭제
+        boardMappingRepository.deleteByBoard_BoardId(boardId);
+    
+        // 3. 게시글 삭제
+        boardRepository.delete(board);
+    }
+
 
 }
 

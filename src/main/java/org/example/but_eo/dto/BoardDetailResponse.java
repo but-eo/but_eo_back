@@ -23,4 +23,5 @@ public class BoardDetailResponse {
     private int commentCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private List<CommentResponse> comments;
 }
