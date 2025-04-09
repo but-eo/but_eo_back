@@ -186,7 +186,7 @@ public class UsersService {
         System.out.println(user.getEmail() + " 계정 탈퇴 처리됨.");
     }
 
-    //영구 삭제 코드, 외래키 제약 조건 때문에 아직은 미완 고민좀 해봐야할듯
+    //영구 삭제 코드
     @Transactional
     public void deleteUserPermanently(String userId) {
         Users user = usersRepository.findByUserHashId(userId);
@@ -224,13 +224,15 @@ public class UsersService {
                 user.getCreatedAt()
         );
     }
-
+    
+    //전체유저 조회
     public List<UserInfoResponseDto> getAllUsers() {
         return usersRepository.findAll().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
+    
     private UserInfoResponseDto convertToDto(Users user) {
         return new UserInfoResponseDto(
                 user.getName(),

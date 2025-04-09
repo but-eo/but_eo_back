@@ -84,6 +84,7 @@ public class TeamService {
         teamMemberRepository.save(teamMember);
     }
 
+    //팀 수정
     @Transactional
     public void updateTeam(String teamId, UpdateTeamRequest req, String userId) {
         Team team = teamRepository.findById(teamId)
