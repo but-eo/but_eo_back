@@ -2,6 +2,7 @@ package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.example.but_eo.dto.*;
 import org.example.but_eo.entity.Users;
 import org.example.but_eo.service.UsersService;
@@ -139,32 +140,29 @@ public class UsersController {
         return ResponseEntity.ok(userInfo);
     }
 
+    //닉네임으로 검색
     @GetMapping("/search")
-    public ResponseEntity<List<UserInfoResponseDto>> getUsersByName(@RequestParam String name) {
-        List<Users> users = usersRepository.findAllByName(name);
-        List<UserInfoResponseDto> result = users.stream().map(user -> new UserInfoResponseDto(
+    public ResponseEntity<List<UserSearchDto>> getUsersByName(@RequestParam String name) {
+        List<Users> users = usersRepository.findByNameContains(name);
+        List<UserSearchDto> result = users.stream().map(user -> new UserSearchDto(
+                user.getUserHashId(),
                 user.getName(),
-                user.getEmail(),
-                user.getTel(),
-                user.getRegion(),
-                user.getPreferSports(),
-                user.getGender(),
-                user.getProfile(),
-                user.getBirth(),
-                user.getBadmintonScore(),
-                user.getTennisScore(),
-                user.getTableTennisScore(),
-                user.getBowlingScore(),
-                user.getCreatedAt()
+                user.getProfile()
         )).toList();
 
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping
-    public ResponseEntity<List<UserInfoResponseDto>> getAllUsers() {
-        List<UserInfoResponseDto> users = usersService.getAllUsers();
-        return ResponseEntity.ok(users);
+    @GetMapping("/searchAll")
+    public ResponseEntity<List<UserSearchDto>> searchAll() {
+        List<Users> users = usersRepository.findAll();
+        List<UserSearchDto> result = users.stream().map(user -> new UserSearchDto(
+                user.getUserHashId(),
+                user.getName(),
+                user.getProfile()
+        )).toList();
+
+        return ResponseEntity.ok(result);
     }
 
     @RestController
