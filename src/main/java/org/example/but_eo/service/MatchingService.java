@@ -1,13 +1,11 @@
 package org.example.but_eo.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.but_eo.dto.ChallengerTeamResponse;
 import org.example.but_eo.dto.MatchCreateRequest;
 import org.example.but_eo.dto.MatchingDetailResponse;
 import org.example.but_eo.dto.MatchingListResponse;
-import org.example.but_eo.entity.Matching;
-import org.example.but_eo.entity.Stadium;
-import org.example.but_eo.entity.Team;
-import org.example.but_eo.entity.TeamMember;
+import org.example.but_eo.entity.*;
 import org.example.but_eo.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -27,6 +26,7 @@ public class MatchingService {
     private final StadiumRepository stadiumRepository;
     private final MatchingRepository matchingRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final ChallengerListRepository challengerListRepository;
 
     @Transactional
     public void createMatch(MatchCreateRequest request, String userId) {
@@ -105,6 +105,68 @@ public class MatchingService {
         );
     }
 
+    @Transactional
+    public void applyChallenge(String matchId, String userId) {
+        Matching matching = matchingRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("매치 없음"));
+
+        if (matching.getState() != Matching.State.WAITING) {
+            throw new RuntimeException("이미 도전이 수락된 매치입니다.");
+        }
+
+        // 현재 유저가 속한 팀 찾기 (도전자)
+        TeamMember member = teamMemberRepository.findByUser_UserHashId(userId)
+                .orElseThrow(() -> new RuntimeException("팀 멤버가 아님"));
+        Team challengerTeam = member.getTeam();
+
+        // 자기가 만든 매치에 도전 x
+        if (matching.getTeam().getTeamId().equals(challengerTeam.getTeamId())) {
+            throw new RuntimeException("자기 팀 매치에는 도전할 수 없습니다.");
+        }
+
+        // 중복 도전 x
+        ChallengerKey key = new ChallengerKey(matchId, challengerTeam.getTeamId());
+        if (challengerListRepository.existsById(key)) {
+            throw new RuntimeException("이미 도전 신청한 매치입니다.");
+        }
+
+        // 도전 신청 저장
+        ChallengerList challenger = new ChallengerList();
+        challenger.setChallengerKey(key);
+        challenger.setMatching(matching);
+        challenger.setTeam(challengerTeam);
+        challengerListRepository.save(challenger);
+    }
+
+    public List<ChallengerTeamResponse> getChallengerTeams(String matchId, String userId) {
+        Matching match = matchingRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("매치가 존재하지 않습니다."));
+
+        Team hostTeam = match.getTeam();
+
+        // 요청자가 리더인지 확인
+        boolean isLeader = hostTeam.getTeamMemberList().stream()
+                .anyMatch(m -> m.getUser().getUserHashId().equals(userId)
+                        && m.getType() == TeamMember.Type.LEADER);
+        if (!isLeader) {
+            throw new RuntimeException("리더만 도전 목록을 조회할 수 있습니다.");
+        }
+
+        // 도전자 목록 가져오기
+        List<ChallengerList> challengers = challengerListRepository.findByMatching_MatchId(matchId);
+
+        return challengers.stream()
+                .map(c -> {
+                    Team team = c.getTeam();
+                    return new ChallengerTeamResponse(
+                            team.getTeamId(),
+                            team.getTeamName(),
+                            team.getRegion(),
+                            team.getRating()
+                    );
+                })
+                .toList();
+    }
 
 
 

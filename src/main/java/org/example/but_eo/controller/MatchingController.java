@@ -1,6 +1,7 @@
 package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.but_eo.dto.ChallengerTeamResponse;
 import org.example.but_eo.dto.MatchCreateRequest;
 import org.example.but_eo.dto.MatchingDetailResponse;
 import org.example.but_eo.dto.MatchingListResponse;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,6 +47,19 @@ public class MatchingController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/{matchId}/challenge")
+    public ResponseEntity<?> applyChallenge(@PathVariable String matchId) {
+        String userId = SecurityUtil.getCurrentUserId();
+        matchingService.applyChallenge(matchId, userId);
+        return ResponseEntity.ok("도전 신청 완료");
+    }
+
+    @GetMapping("/{matchId}/challenges")
+    public ResponseEntity<List<ChallengerTeamResponse>> getChallengerList(@PathVariable String matchId) {
+        String userId = SecurityUtil.getCurrentUserId();
+        List<ChallengerTeamResponse> challengers = matchingService.getChallengerTeams(matchId, userId);
+        return ResponseEntity.ok(challengers);
+    }
 
     public class SecurityUtil {
         public static String getCurrentUserId() {
@@ -54,5 +70,6 @@ public class MatchingController {
             return authentication.getName(); // 또는 JWT claim 기반으로 userId 추출
         }
     }
+
 }
 
