@@ -12,10 +12,13 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MatchCreateRequest {
-    private String stadiumId;
+public class MatchingListResponse {
+    private String matchId;
+    private String teamName;
+    private String region;
+    private String stadiumName;
     private LocalDateTime matchDate;
-    private Boolean loan;               //대여 여부
-    private String etc;                 //기타
+    private Matching.Match_Type matchType;
+    private Boolean loan;
 }
 

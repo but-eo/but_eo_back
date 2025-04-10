@@ -1,6 +1,8 @@
 package org.example.but_eo.repository;
 
 import org.example.but_eo.entity.Matching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,5 +19,14 @@ public interface MatchingRepository extends JpaRepository<Matching, String> {
 
     // 팀 ID로 매치 목록
     List<Matching> findByTeam_TeamId(String teamId);
+
+    //경기장 기준으로 지역가져옴
+    Page<Matching> findByMatchTypeAndStadium_StadiumRegionAndState(Matching.Match_Type matchType, String region, Matching.State state, Pageable pageable);
+    Page<Matching> findByMatchTypeAndState(Matching.Match_Type matchType, Matching.State state, Pageable pageable);
+
+    Page<Matching> findByRegionAndState(String region, Matching.State state, Pageable pageable);
+
+    Page<Matching> findByState(Matching.State state, Pageable pageable);
+
 }
 

@@ -52,6 +52,10 @@ public class Matching {
     @Column(nullable = false)
     private LocalDateTime matchDate;
 
+    @Column(length = 30, nullable = true)
+    private String region;
+
+
     public enum Match_Type {
         SOCCER, FUTSAL, BASEBALL, BASKETBALL, BADMINTON, TENNIS, TABLE_TENNIS, BOWLING
     } //축구, 풋살, 야구, 농구, 배드민턴, 테니스, 탁구, 볼링
