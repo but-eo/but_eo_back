@@ -77,6 +77,13 @@ public class MatchingController {
         return ResponseEntity.ok("도전 거절 완료");
     }
 
+    @PatchMapping("/{matchId}/cancel")
+    public ResponseEntity<?> cancelMatch(@PathVariable String matchId) {
+        String userId = SecurityUtil.getCurrentUserId();
+        matchingService.cancelMatch(matchId, userId);
+        return ResponseEntity.ok("매치가 취소되었습니다.");
+    }
+
 
     public class SecurityUtil {
         public static String getCurrentUserId() {

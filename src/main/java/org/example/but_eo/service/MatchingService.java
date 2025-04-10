@@ -221,6 +221,29 @@ public class MatchingService {
         challengerListRepository.deleteById(key);
     }
 
+    @Transactional
+    public void cancelMatch(String matchId, String userId) {
+        Matching matching = matchingRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("매치가 존재하지 않습니다."));
+
+        // 상태 체크: WAITING만 가능
+        if (matching.getState() != Matching.State.WAITING) {
+            throw new RuntimeException("매치가 대기 상태일 때만 취소할 수 있습니다.");
+        }
+
+        //리더인지 체크
+        Team team = matching.getTeam();
+        boolean isLeader = team.getTeamMemberList().stream()
+                .anyMatch(m -> m.getUser().getUserHashId().equals(userId)
+                        && m.getType() == TeamMember.Type.LEADER);
+        if (!isLeader) {
+            throw new RuntimeException("리더만 매치를 취소할 수 있습니다.");
+        }
+
+        matching.setState(Matching.State.CANCEL);
+        matchingRepository.save(matching);
+    }
+
 
 }
 
