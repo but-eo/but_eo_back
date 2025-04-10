@@ -168,6 +168,58 @@ public class MatchingService {
                 .toList();
     }
 
+    @Transactional
+    public void acceptChallenge(String matchId, String challengerTeamId, String userId) {
+        Matching matching = matchingRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("매치 없음"));
+
+        if (matching.getState() != Matching.State.WAITING)
+            throw new RuntimeException("이미 수락된 매치입니다.");
+
+        Team hostTeam = matching.getTeam();
+        boolean isLeader = hostTeam.getTeamMemberList().stream()
+                .anyMatch(m -> m.getUser().getUserHashId().equals(userId)
+                        && m.getType() == TeamMember.Type.LEADER);
+        if (!isLeader)
+            throw new RuntimeException("리더만 수락할 수 있습니다.");
+
+        Team challenger = teamRepository.findById(challengerTeamId)
+                .orElseThrow(() -> new RuntimeException("도전 팀 없음"));
+
+        // 도전 신청 존재 여부 확인
+        ChallengerKey key = new ChallengerKey(matchId, challengerTeamId);
+        if (!challengerListRepository.existsById(key)) {
+            throw new RuntimeException("도전 신청이 없습니다.");
+        }
+
+        // 수락 처리
+        matching.setChallengerTeam(challenger);
+        matching.setState(Matching.State.SUCCESS);
+        matchingRepository.save(matching);
+
+        // 나머지 도전 신청들 제거
+        challengerListRepository.deleteAllByMatching_MatchId(matchId);
+    }
+
+    @Transactional
+    public void declineChallenge(String matchId, String challengerTeamId, String userId) {
+        Matching matching = matchingRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("매치 없음"));
+
+        Team hostTeam = matching.getTeam();
+        boolean isLeader = hostTeam.getTeamMemberList().stream()
+                .anyMatch(m -> m.getUser().getUserHashId().equals(userId)
+                        && m.getType() == TeamMember.Type.LEADER);
+        if (!isLeader)
+            throw new RuntimeException("리더만 거절할 수 있습니다.");
+
+        ChallengerKey key = new ChallengerKey(matchId, challengerTeamId);
+        if (!challengerListRepository.existsById(key)) {
+            throw new RuntimeException("도전 신청이 없습니다.");
+        }
+
+        challengerListRepository.deleteById(key);
+    }
 
 
 }

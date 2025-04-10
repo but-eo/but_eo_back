@@ -61,6 +61,23 @@ public class MatchingController {
         return ResponseEntity.ok(challengers);
     }
 
+    @PatchMapping("/{matchId}/accept/{challengerTeamId}")
+    public ResponseEntity<?> acceptChallenge(@PathVariable String matchId,
+                                             @PathVariable String challengerTeamId) {
+        String userId = SecurityUtil.getCurrentUserId();
+        matchingService.acceptChallenge(matchId, challengerTeamId, userId);
+        return ResponseEntity.ok("도전 수락 완료");
+    }
+
+    @DeleteMapping("/{matchId}/decline/{challengerTeamId}")
+    public ResponseEntity<?> declineChallenge(@PathVariable String matchId,
+                                              @PathVariable String challengerTeamId) {
+        String userId = SecurityUtil.getCurrentUserId();
+        matchingService.declineChallenge(matchId, challengerTeamId, userId);
+        return ResponseEntity.ok("도전 거절 완료");
+    }
+
+
     public class SecurityUtil {
         public static String getCurrentUserId() {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
