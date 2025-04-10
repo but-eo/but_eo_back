@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -45,7 +46,7 @@ public class UsersController {
     }
 
     @PostMapping("/kakao/login")
-    public ResponseEntity<String> kakaologin(@RequestBody KakaoLoginDto kakaoLoginDto) {
+    public ResponseEntity<Map<String, String>> kakaologin(@RequestBody KakaoLoginDto kakaoLoginDto) {
         try {
             String userHashId = UUID.randomUUID().toString();
             String userPassword = UUID.randomUUID().toString();
@@ -63,20 +64,31 @@ public class UsersController {
                 newUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
                 newUser.setDivision(Users.Division.USER);
                 newUser.setState(Users.State.ACTIVE);
+                newUser.setLoginType(Users.LoginType.KAKAO);
                 newUser.setCreatedAt(LocalDateTime.now());
                 usersRepository.save(newUser);
             } else {
                 existingUser.setName(kakaoLoginDto.getNickName());
                 existingUser.setProfile(kakaoLoginDto.getProfileImage());
                 existingUser.setRefreshToken(kakaoLoginDto.getRefreshToken());
+                existingUser.setLoginType(Users.LoginType.KAKAO);
                 usersRepository.save(existingUser);
             }
 
-            return ResponseEntity.ok("로그인 성공 : " + kakaoLoginDto.getNickName());
+            // 여기서 JWT 처리
+            Users savedUser = usersRepository.findByEmail(kakaoLoginDto.getEmail());
+            String jwtToken = jwtUtil.generateAccessToken(savedUser.getUserHashId());
+
+            Map<String, String> result = new HashMap<>();
+            result.put("accessToken", jwtToken);
+
+            return ResponseEntity.ok(result);
+            //return ResponseEntity.ok("로그인 성공 : " + kakaoLoginDto.getNickName());
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그인 실패");
+            //return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그인 실패");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "로그인 실패"));
         }
     }
 
@@ -175,4 +187,13 @@ public class UsersController {
             return "소셜 로그인 성공! 유저 이름: " + oAuth2User.getAttribute("name");
         }
     }
+    
+    //로그아웃
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        usersService.logout(userId);
+        return ResponseEntity.ok("로그아웃 성공");
+    }
+
 }

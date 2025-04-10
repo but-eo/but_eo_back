@@ -56,6 +56,7 @@ public class UsersService {
         user.setUserHashId(generateUserHash(dto.getEmail())); // 예: SHA-256 등
         user.setState(Users.State.ACTIVE);
         user.setDivision(Users.Division.USER);
+        user.setLoginType(Users.LoginType.BUTEO);
         user.setEmail(dto.getEmail());
         user.setName(dto.getName());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -250,6 +251,37 @@ public class UsersService {
                 user.getCreatedAt()
         );
     }
+
+    //로그아웃
+    @Transactional
+    public void logout(String userId) {
+        Users user = usersRepository.findByUserHashId(userId);
+        if (user == null) throw new IllegalArgumentException("사용자를 찾을 수 없습니다.");
+
+        switch (user.getLoginType()) {
+            case BUTEO:
+                // JWT 기반 로그아웃 처리 (리프레시 토큰 삭제 등)
+                user.setRefreshToken(null);
+                System.out.println("JWT 로그아웃 완료");
+                break;
+
+            case KAKAO:
+                // 카카오 로그아웃 처리
+                // (토큰 만료 or 프론트에서 카카오 SDK로 로그아웃 필요)
+                user.setRefreshToken(null);
+                System.out.println("카카오 로그아웃 - 프론트에서도 처리 필요");
+                break;
+
+            case NAVER:
+                // 네이버도 동일 처리
+                user.setRefreshToken(null);
+                System.out.println("네이버 로그아웃 - 프론트에서도 처리 필요");
+                break;
+        }
+
+        usersRepository.save(user);
+    }
+
 
 
 }

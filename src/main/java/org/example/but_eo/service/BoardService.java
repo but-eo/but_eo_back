@@ -168,7 +168,7 @@ public class BoardService {
 
         // 2. 파일 매핑 삭제
         boardMappingRepository.deleteByBoard_BoardId(boardId);
-    
+
         // 3. 게시글 삭제
         boardRepository.delete(board);
     }

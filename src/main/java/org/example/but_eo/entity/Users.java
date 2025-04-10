@@ -29,6 +29,14 @@ public class Users {
         USER, ADMIN, BUSINESS
     }; //유저, 관리자, 사업자
 
+    public enum LoginType {
+        BUTEO, KAKAO, NAVER
+    }
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private LoginType loginType;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private State state;
