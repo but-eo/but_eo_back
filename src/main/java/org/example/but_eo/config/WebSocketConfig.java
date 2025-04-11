@@ -13,6 +13,7 @@ import java.net.http.WebSocket;
 @EnableWebSocketMessageBroker
 @Slf4j
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    // WebSocketMessageBrokerConfigurer WebSocket을 쓸 때, 메시지 경로, 구독 채널, 엔드포인트 등을 설정하게 해주는 역할
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -24,6 +25,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+        // StompEndpointRegistry = Stomp 엔드포인트를 등록할 때 사용하는 클래스
         registry.addEndpoint("/ws").setAllowedOrigins("*");
         System.out.println("Websocket 엔드포인트 /ws 등록 완료");
     }
