@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TeamMemberRepository extends JpaRepository<TeamMember, TeamMemberKey> {
@@ -28,4 +29,9 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, TeamMemb
     long countByTeam_TeamId(String teamId);
 
     List<TeamMember> findAllByUser(Users user);
+
+    Optional<TeamMember> findByUser_UserHashId(String userId);
+
+    Optional<TeamMember> findByUser_UserHashIdAndType(String userId, TeamMember.Type type);
+
 }
