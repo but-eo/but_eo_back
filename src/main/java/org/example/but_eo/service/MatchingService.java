@@ -1,10 +1,7 @@
 package org.example.but_eo.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.but_eo.dto.ChallengerTeamResponse;
-import org.example.but_eo.dto.MatchCreateRequest;
-import org.example.but_eo.dto.MatchingDetailResponse;
-import org.example.but_eo.dto.MatchingListResponse;
+import org.example.but_eo.dto.*;
 import org.example.but_eo.entity.*;
 import org.example.but_eo.repository.*;
 import org.springframework.data.domain.Page;
@@ -243,6 +240,68 @@ public class MatchingService {
         matching.setState(Matching.State.CANCEL);
         matchingRepository.save(matching);
     }
+
+    //매치 결과 등록
+    @Transactional
+    public void registerMatchResult(String matchId, MatchResultRequest request, String userId) {
+        Matching matching = matchingRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("매치가 존재하지 않습니다."));
+
+        // 상태가 SUCCESS인지 확인
+        if (matching.getState() != Matching.State.SUCCESS) {
+            throw new RuntimeException("도전 수락된 매치만 결과 등록이 가능합니다.");
+        }
+        
+        //리더인지 체크
+        Team hostTeam = matching.getTeam();
+        boolean isLeader = hostTeam.getTeamMemberList().stream()
+                .anyMatch(m -> m.getUser().getUserHashId().equals(userId)
+                        && m.getType() == TeamMember.Type.LEADER);
+        if (!isLeader) {
+            throw new RuntimeException("리더만 결과를 등록할 수 있습니다.");
+        }
+    
+        //스코어 가져오기
+        int winnerScore = request.getWinnerScore();
+        int loserScore = request.getLoserScore();
+
+        Team team1 = matching.getTeam();              // 주최팀
+        Team team2 = matching.getChallengerTeam();    // 도전자팀
+
+        if (team2 == null) {
+            throw new RuntimeException("도전자 팀 정보가 없습니다.");
+        }
+
+        // 승리 팀 자동 판별
+        Team winnerTeam = null;
+        Team loserTeam = null;
+
+        if (winnerScore > loserScore) {
+            winnerTeam = team1;
+            loserTeam = team2;
+        } else if (winnerScore < loserScore) {
+            winnerTeam = team2;
+            loserTeam = team1;
+        }
+
+        matching.setWinnerScore(winnerScore);
+        matching.setLoserScore(loserScore);
+        matching.setWinnerTeam(winnerTeam);
+        matching.setLoserTeam(loserTeam);
+        matching.setState(Matching.State.COMPLETE);
+
+        // 레이팅 반영
+        if (winnerScore > loserScore) {
+            winnerTeam.setRating(winnerTeam.getRating() + 3);
+        } else if (winnerScore == loserScore) {
+            int bonus = (winnerScore == 0) ? 1 : 2;         //무승부면 2점 0:0이면 1점
+            team1.setRating(team1.getRating() + bonus);
+            team2.setRating(team2.getRating() + bonus);
+        }
+
+        matchingRepository.save(matching);
+    }
+
 
 
 }

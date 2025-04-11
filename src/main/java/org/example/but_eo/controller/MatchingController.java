@@ -1,10 +1,7 @@
 package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.but_eo.dto.ChallengerTeamResponse;
-import org.example.but_eo.dto.MatchCreateRequest;
-import org.example.but_eo.dto.MatchingDetailResponse;
-import org.example.but_eo.dto.MatchingListResponse;
+import org.example.but_eo.dto.*;
 import org.example.but_eo.entity.Matching;
 import org.example.but_eo.service.MatchingService;
 import org.springframework.data.domain.Page;
@@ -82,6 +79,14 @@ public class MatchingController {
         String userId = SecurityUtil.getCurrentUserId();
         matchingService.cancelMatch(matchId, userId);
         return ResponseEntity.ok("매치가 취소되었습니다.");
+    }
+
+    @PatchMapping("/{matchId}/result")
+    public ResponseEntity<?> registerResult(@PathVariable String matchId,
+                                            @RequestBody MatchResultRequest request) {
+        String userId = SecurityUtil.getCurrentUserId();
+        matchingService.registerMatchResult(matchId, request, userId);
+        return ResponseEntity.ok("경기 결과 등록 완료");
     }
 
 
