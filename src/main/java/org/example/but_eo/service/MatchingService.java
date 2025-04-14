@@ -292,17 +292,30 @@ public class MatchingService {
 
         // 레이팅 반영
         if (winnerScore > loserScore) {
+            // 승자 처리
             winnerTeam.setRating(winnerTeam.getRating() + 3);
+            winnerTeam.setMatchCount(winnerTeam.getMatchCount() + 1);
+            winnerTeam.setWinCount(winnerTeam.getWinCount() + 1);
+
+            // 패자 처리
+            loserTeam.setMatchCount(loserTeam.getMatchCount() + 1);
+            loserTeam.setLoseCount(loserTeam.getLoseCount() + 1);
         } else if (winnerScore == loserScore) {
             int bonus = (winnerScore == 0) ? 1 : 2;         //무승부면 2점 0:0이면 1점
             team1.setRating(team1.getRating() + bonus);
             team2.setRating(team2.getRating() + bonus);
+            
+            //매치 카운트 증가
+            team1.setMatchCount(team1.getMatchCount() + 1); 
+            team2.setMatchCount(team2.getMatchCount() + 1);
+            
+            //무승부 카운트 증가
+            team1.setDrawCount(team1.getDrawCount() + 1);
+            team2.setDrawCount(team2.getDrawCount() + 1);
         }
 
         matchingRepository.save(matching);
     }
-
-
 
 }
 
