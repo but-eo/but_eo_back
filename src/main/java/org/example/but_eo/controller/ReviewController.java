@@ -2,11 +2,14 @@ package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.but_eo.dto.ReviewRequest;
+import org.example.but_eo.dto.ReviewResponse;
 import org.example.but_eo.service.ReviewService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -21,6 +24,17 @@ public class ReviewController {
         reviewService.writeReview(request, userId);
         return ResponseEntity.ok("리뷰 작성 완료");
     }
+
+    @GetMapping("/match/{matchId}")
+    public ResponseEntity<List<ReviewResponse>> getReviewsByMatch(@PathVariable String matchId) {
+        return ResponseEntity.ok(reviewService.getReviewsByMatch(matchId));
+    }
+
+    @GetMapping("/team/{teamId}")
+    public ResponseEntity<List<ReviewResponse>> getReviewsByTeam(@PathVariable String teamId) {
+        return ResponseEntity.ok(reviewService.getReviewsByTeam(teamId));
+    }
+
 
 
     public class SecurityUtil {

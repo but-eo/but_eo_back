@@ -2,12 +2,14 @@ package org.example.but_eo.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.but_eo.dto.ReviewRequest;
+import org.example.but_eo.dto.ReviewResponse;
 import org.example.but_eo.entity.*;
 import org.example.but_eo.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -70,6 +72,31 @@ public class ReviewService {
         review.setContent(request.getContent());
         review.setCreatedAt(LocalDateTime.now());
 
+        //리뷰 총 합계에 추가
+        targetTeam.setTotalReview(targetTeam.getTotalReview() + request.getRating());
+        
         reviewRepository.save(review);
     }
+
+
+    public List<ReviewResponse> getReviewsByMatch(String matchId) {
+        List<MatchReview> reviews = reviewRepository.findByMatch_MatchId(matchId);
+        return reviews.stream().map(this::convertToDto).toList();
+    }
+
+    public List<ReviewResponse> getReviewsByTeam(String teamId) {
+        List<MatchReview> reviews = reviewRepository.findByTargetTeam_TeamId(teamId);
+        return reviews.stream().map(this::convertToDto).toList();
+    }
+
+    private ReviewResponse convertToDto(MatchReview review) {
+        return new ReviewResponse(
+                review.getReviewId(),
+                review.getWriter().getName(),
+                review.getRating(),
+                review.getContent(),
+                review.getCreatedAt()
+        );
+    }
+
 }
