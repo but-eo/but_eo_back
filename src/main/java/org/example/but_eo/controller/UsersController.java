@@ -32,6 +32,14 @@ public class UsersController {
     private final JwtUtil jwtUtil;
     private final UsersRepository usersRepository;
 
+    @PostMapping("/check_email")
+    public ResponseEntity<?> checkEmail(@RequestBody EmailRequestDto emailRequestDto) {
+        boolean exists = usersRepository.existsByEmail(emailRequestDto.getEmail());
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("exist", exists);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody UserRegisterRequestDto dto) {
         usersService.registerUser(dto);
