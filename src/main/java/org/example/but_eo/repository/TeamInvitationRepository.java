@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.example.but_eo.entity.Users;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TeamInvitationRepository extends JpaRepository<TeamInvitation, String> {
 
@@ -28,6 +29,10 @@ public interface TeamInvitationRepository extends JpaRepository<TeamInvitation, 
     void deleteAllByUser(Users user);
 
     boolean existsByUser_UserHashIdAndTeam_TeamId(String userId, String teamId);
+
+    // TeamInvitationRepository
+    Optional<TeamInvitation> findByUser_UserHashIdAndTeam_TeamIdAndStatus(String userId, String teamId, TeamInvitation.Status status);
+
 
     void deleteAllByTeam(Team team);
 }

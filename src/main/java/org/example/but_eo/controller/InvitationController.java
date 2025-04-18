@@ -16,6 +16,7 @@ public class InvitationController {
 
     private final InvitationService invitationService;
 
+    //초대 수락
     @PostMapping("/{invitationId}/accept")
     public ResponseEntity<String> acceptInvitation(
             @PathVariable String invitationId,
@@ -26,6 +27,7 @@ public class InvitationController {
         return ResponseEntity.ok("초대 수락 완료");
     }
 
+    //초대 거절
     @PostMapping("/{invitationId}/decline")
     public ResponseEntity<String> declineInvitation(
             @PathVariable String invitationId,

@@ -229,10 +229,66 @@ public class TeamService {
             throw new IllegalStateException("이미 이 유저에게 초대가 발송되었습니다.");
         }
 
-
         // 초대 저장
         TeamInvitation invitation = TeamInvitation.create(team, user);
         teamInvitationRepository.save(invitation);
     }
+
+    //초대 취소
+    @Transactional
+    public void cancelInvitation(String teamId, String targetUserId, String leaderId) {
+        // 리더 권한 확인
+        TeamMemberKey key = new TeamMemberKey(leaderId, teamId);
+        TeamMember leader = teamMemberRepository.findById(key)
+                .orElseThrow(() -> new IllegalAccessError("팀에 속해있지 않습니다."));
+        if (leader.getType() != TeamMember.Type.LEADER) {
+            throw new IllegalAccessError("리더만 초대를 취소할 수 있습니다.");
+        }
+
+        // 초대 존재 확인
+        TeamInvitation invitation = teamInvitationRepository
+                .findByUser_UserHashIdAndTeam_TeamIdAndStatus(targetUserId, teamId, TeamInvitation.Status.PENDING)
+                .orElseThrow(() -> new IllegalArgumentException("해당 초대가 존재하지 않거나 이미 처리됨"));
+
+        teamInvitationRepository.delete(invitation);
+    }
+    //탈퇴
+    @Transactional
+    public void leaveTeam(String teamId, String userId) {
+        TeamMemberKey key = new TeamMemberKey(userId, teamId);
+        TeamMember member = teamMemberRepository.findById(key)
+                .orElseThrow(() -> new IllegalArgumentException("팀에 속해있지 않습니다."));
+
+        if (member.getType() == TeamMember.Type.LEADER) {
+            throw new IllegalStateException("리더는 탈퇴할 수 없습니다. 팀 삭제 또는 리더 위임이 필요합니다.");
+        }
+
+        teamMemberRepository.delete(member);
+    }
+
+    //방출
+    @Transactional
+    public void kickMember(String teamId, String targetUserId, String leaderId) {
+        // 리더 권한 확인
+        TeamMemberKey leaderKey = new TeamMemberKey(leaderId, teamId);
+        TeamMember leader = teamMemberRepository.findById(leaderKey)
+                .orElseThrow(() -> new IllegalAccessError("팀에 속해있지 않습니다."));
+
+        if (leader.getType() != TeamMember.Type.LEADER) {
+            throw new IllegalAccessError("리더만 팀원을 방출할 수 있습니다.");
+        }
+
+        if (leaderId.equals(targetUserId)) {
+            throw new IllegalArgumentException("자기 자신은 방출할 수 없습니다.");
+        }
+
+        TeamMemberKey targetKey = new TeamMemberKey(targetUserId, teamId);
+        TeamMember target = teamMemberRepository.findById(targetKey)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저는 팀원이 아닙니다."));
+
+        teamMemberRepository.delete(target);
+    }
+
+
 
 }
