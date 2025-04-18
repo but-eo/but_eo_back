@@ -16,6 +16,7 @@ public class InvitationService {
     private final TeamInvitationRepository teamInvitationRepository;
     private final TeamMemberRepository teamMemberRepository;
 
+    //초대 수락
     @Transactional
     public void acceptInvitation(String invitationId, String userId) {
         TeamInvitation invitation = teamInvitationRepository.findById(invitationId)
@@ -52,6 +53,7 @@ public class InvitationService {
         teamInvitationRepository.save(invitation);
     }
 
+    //초대 거절
     @Transactional
     public void declineInvitation(String invitationId, String userId) {
         TeamInvitation invitation = teamInvitationRepository.findById(invitationId)
@@ -69,6 +71,7 @@ public class InvitationService {
         teamInvitationRepository.save(invitation);
     }
 
+    //초대 리스트
     public List<InvitationResponse> getPendingInvitations(String userId) {
         List<TeamInvitation> list = teamInvitationRepository
                 .findByUser_UserHashIdAndStatus(userId, TeamInvitation.Status.PENDING);

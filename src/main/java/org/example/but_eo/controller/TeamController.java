@@ -88,4 +88,38 @@ public class TeamController {
         return ResponseEntity.ok("초대 성공");
     }
 
+    // 초대 취소
+    @DeleteMapping("/{teamId}/invitecancel/{userId}")
+    public ResponseEntity<String> cancelInvitation(
+            @PathVariable String teamId,
+            @PathVariable String userId,
+            Authentication auth) {
+
+        String leaderId = (String) auth.getPrincipal();
+        teamService.cancelInvitation(teamId, userId, leaderId);
+        return ResponseEntity.ok("초대를 취소하였습니다.");
+    }
+
+    // 팀 탈퇴
+    @DeleteMapping("/{teamId}/leave")
+    public ResponseEntity<String> leaveTeam(@PathVariable String teamId, Authentication auth) {
+        String userId = (String) auth.getPrincipal();
+        teamService.leaveTeam(teamId, userId);
+        return ResponseEntity.ok("팀에서 탈퇴하였습니다.");
+    }
+
+    // 팀원 방출
+    @DeleteMapping("/{teamId}/kick/{userId}")
+    public ResponseEntity<String> kickMember(
+            @PathVariable String teamId,
+            @PathVariable String userId,
+            Authentication auth) {
+
+        String leaderId = (String) auth.getPrincipal();
+        teamService.kickMember(teamId, userId, leaderId);
+        return ResponseEntity.ok("해당 유저를 팀에서 방출하였습니다.");
+    }
+
+
+
 }
