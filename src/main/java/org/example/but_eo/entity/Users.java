@@ -54,7 +54,7 @@ public class Users {
     @Column(length = 100, nullable = false)
     private String password;
 
-    @Column(length = 15, nullable = true)
+    @Column(length = 30, nullable = true)
     private String tel;
 
     @Column(length = 30, nullable = true)
