@@ -10,7 +10,8 @@ public class KakaoLoginDto {
     String profileImage;
     String email;
     String gender;
-    String birthYear;
+    String birthYear; 
     String refreshToken;
+    String tel;
 }
 

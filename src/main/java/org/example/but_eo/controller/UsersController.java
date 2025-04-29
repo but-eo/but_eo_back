@@ -65,6 +65,7 @@ public class UsersController {
                 Users newUser = new Users();
                 newUser.setUserHashId(userHashId);
                 newUser.setName(kakaoLoginDto.getNickName());
+                newUser.setTel(kakaoLoginDto.getTel());
                 newUser.setPassword(userPassword);
                 newUser.setEmail(kakaoLoginDto.getEmail());
                 newUser.setProfile(kakaoLoginDto.getProfileImage());
