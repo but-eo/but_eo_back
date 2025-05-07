@@ -36,13 +36,15 @@ public class BoardController {
     //게시판 간단 조회
     @GetMapping
     public ResponseEntity<List<BoardResponse>> getBoards(
+            @RequestParam Board.Event event,
             @RequestParam Board.Category category,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        List<BoardResponse> boardList = boardService.getBoardsByCategory(category, page, size);
+        List<BoardResponse> boardList = boardService.getBoardsByEventAndCategory(event, category, page, size);
         return ResponseEntity.ok(boardList);
     }
+
 
     //게시판 상세조회
     @GetMapping("/{boardId}")
