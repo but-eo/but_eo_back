@@ -11,4 +11,5 @@ public class BoardRequest {
     private String content;
     private Board.State state;
     private Board.Category category;
+    private Board.Event event; // 추가
 }

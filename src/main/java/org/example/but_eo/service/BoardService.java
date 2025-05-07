@@ -35,8 +35,9 @@ public class BoardService {
     private final UsersRepository usersRepository;
     private final BoardMappingRepository boardMappingRepository;
     private final CommentRepository commentRepository;
-    private final FileService fileService; // 업로드 및 BoardMapping 처리용
+    private final FileService fileService;
 
+    // 게시글 생성
     public void createBoard(BoardRequest request, List<MultipartFile> files, String userId) {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
@@ -47,6 +48,7 @@ public class BoardService {
         board.setTitle(request.getTitle());
         board.setContent(request.getContent());
         board.setCategory(request.getCategory());
+        board.setEvent(request.getEvent()); // ✅ 종목 설정
         board.setState(request.getState());
         board.setCreatedAt(LocalDateTime.now());
         board.setUpdatedAt(null);
@@ -55,30 +57,30 @@ public class BoardService {
 
         boardRepository.save(board);
 
-        // 파일 업로드 및 매핑
         if (files != null && !files.isEmpty()) {
             fileService.uploadAndMapFilesToBoard(files, board);
         }
     }
 
-    //간단조회
-    public List<BoardResponse> getBoardsByCategory(Board.Category category, int page, int size) {
+    // 게시판 조회 (Event + Category 기반)
+    public List<BoardResponse> getBoardsByEventAndCategory(Board.Event event, Board.Category category, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        Page<Board> boards = boardRepository.findByCategoryAndState(category, Board.State.PUBLIC, pageable);
+        Page<Board> boards = boardRepository.findByEventAndCategoryAndState(event, category, Board.State.PUBLIC, pageable);
 
         return boards.stream().map(board -> new BoardResponse(
                 board.getBoardId(),
                 board.getTitle(),
                 board.getUser().getName(),
                 board.getCategory(),
+                board.getEvent(), // ✅ 종목 포함
                 board.getCommentCount(),
                 board.getLikeCount(),
                 board.getCreatedAt()
         )).toList();
     }
 
-    //상세조회
+    // 상세 조회
     public BoardDetailResponse getBoardDetail(String boardId) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
@@ -107,6 +109,7 @@ public class BoardService {
                 board.getContent(),
                 board.getState(),
                 board.getCategory(),
+                board.getEvent(), // ✅ 종목 포함
                 board.getUser().getName(),
                 fileUrls,
                 board.getLikeCount(),
@@ -116,7 +119,6 @@ public class BoardService {
                 commentResponses
         );
     }
-
 
     // 게시글 수정
     public void updateBoard(String boardId, BoardRequest request, List<MultipartFile> files, String userId) {
@@ -129,6 +131,8 @@ public class BoardService {
 
         board.setTitle(request.getTitle());
         board.setContent(request.getContent());
+        board.setCategory(request.getCategory());
+        board.setEvent(request.getEvent()); // ✅ 종목 수정
         board.setState(request.getState());
         board.setUpdatedAt(LocalDateTime.now());
 
@@ -140,7 +144,7 @@ public class BoardService {
         }
     }
 
-    // 게시글 삭제
+    // 게시글 삭제 (Soft Delete)
     public void deleteBoard(String boardId, String userId) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
@@ -153,7 +157,7 @@ public class BoardService {
         boardRepository.save(board);
     }
 
-    //게시글 완전 삭제
+    // 게시글 완전 삭제 (Hard Delete)
     @Transactional
     public void deleteBoardHard(String boardId, String userId) {
         Board board = boardRepository.findById(boardId)
@@ -163,16 +167,8 @@ public class BoardService {
             throw new RuntimeException("작성자만 삭제할 수 있습니다.");
         }
 
-        // 1. 댓글 삭제
         commentRepository.deleteAllByBoard_BoardId(boardId);
-
-        // 2. 파일 매핑 삭제
         boardMappingRepository.deleteByBoard_BoardId(boardId);
-
-        // 3. 게시글 삭제
         boardRepository.delete(board);
     }
-
-
 }
-

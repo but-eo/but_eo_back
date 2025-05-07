@@ -17,6 +17,7 @@ public class BoardDetailResponse {
     private String content;
     private Board.State state;
     private Board.Category category;
+    private Board.Event event; // 추가
     private String userName;
     private List<String> fileUrls;
     private int likeCount;

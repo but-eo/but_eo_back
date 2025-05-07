@@ -33,6 +33,15 @@ public class Board {
         FREE, REVIEW, TEAM, MEMBER, NOTIFICATION
     }
 
+    public enum Event {
+        SOCCER, FUTSAL, BASEBALL, BASKETBALL,
+        BADMINTON, TENNIS, TABLE_TENNIS, BOWLING
+    }
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Event event;
+
     @Column(nullable = false)
     private Category category;
 
