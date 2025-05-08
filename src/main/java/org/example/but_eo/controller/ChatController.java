@@ -23,4 +23,5 @@ public class ChatController {
         ChatRoom chatRoom = chatRoomService.createChatRoom(request.getUserHashId(), request.getChatRoomName());
         return ResponseEntity.ok(chatRoom);
     }
+
 }
