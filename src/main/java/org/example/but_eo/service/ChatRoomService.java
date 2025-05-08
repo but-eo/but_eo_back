@@ -6,6 +6,8 @@ import org.example.but_eo.entity.Users;
 import org.example.but_eo.repository.ChatRoomRepository;
 import org.example.but_eo.repository.UsersRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,7 +33,5 @@ public class ChatRoomService {
         System.out.println("채팅방 생성됨: [" + chatRoomName + "], 유저 IDs: " + userIds);
         return chatRoomRepository.save(chatRoom);
     }
-
-
 
 }
