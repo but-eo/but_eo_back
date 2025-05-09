@@ -185,13 +185,13 @@ public class TeamService {
     //이미지 저장
     private String saveImage(MultipartFile file) {
         try {
-            String uploadDir = "src/main/resources/static/images/team";
+            String uploadDir = System.getProperty("user.dir") + "/uploads/teams/"; // 변경됨
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
             Path filePath = Paths.get(uploadDir, fileName);
-            Files.createDirectories(filePath.getParent());
+            Files.createDirectories(filePath.getParent()); // 디렉토리 없으면 생성
             Files.write(filePath, file.getBytes());
 
-            return "/images/team/" + fileName;
+            return "/uploads/teams/" + fileName; // 이 경로는 DB 저장용이자 클라이언트 접근용
         } catch (IOException e) {
             throw new RuntimeException("파일 저장 실패", e);
         }
