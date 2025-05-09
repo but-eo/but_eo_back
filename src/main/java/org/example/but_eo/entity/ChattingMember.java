@@ -25,4 +25,7 @@ public class ChattingMember {
     @MapsId("chatId")
     @JoinColumn(name = "chat_id", nullable = false)
     private Chatting chatting;
+
+    @Column(nullable = false)
+    private boolean readCheck;
 }

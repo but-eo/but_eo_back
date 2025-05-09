@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.example.but_eo.dto.ChatMessage;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class ChattingMessage {
 
     @ManyToOne
     @JoinColumns({
-            @JoinColumn(name = "user_hash_id", referencedColumnName = "user_hash_id", nullable = false),
+            @JoinColumn(name = "sender", referencedColumnName = "user_hash_id", nullable = false),
             @JoinColumn(name = "chat_id", referencedColumnName = "chat_id", nullable = false)
     })
     private ChattingMember chattingMember;
@@ -32,19 +33,16 @@ public class ChattingMessage {
     private String message;
 
     @Column(nullable = false)
-    private boolean readCheck;
-
-    public enum Division{
-        USER, ADMIN, BUSINESS
-    }; //유저, 관리자, 사업자
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Division division;
-
-    @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    private MessageType type;
+
+    public enum MessageType {
+        ENTER, TALK, EXIT
+    }
 
     @OneToMany(mappedBy = "chattingMessage")
     private List<ChattingMessageMapping> chattingMessageMappinglist = new ArrayList<>();
+
+
 }
