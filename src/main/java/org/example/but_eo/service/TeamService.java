@@ -170,9 +170,7 @@ public class TeamService {
 
     //팀 검색 조건
     public List<TeamResponse> getFilteredTeams(String event, String region, String teamType, String teamCase, String teamName) {
-        List<Team> all = teamRepository.findAll();
-
-        return all.stream()
+        return teamRepository.findAll().stream()
                 .filter(team -> event == null || team.getEvent().name().equalsIgnoreCase(event))
                 .filter(team -> region == null || team.getRegion().contains(region))
                 .filter(team -> teamType == null || team.getTeamType().name().equalsIgnoreCase(teamType))
@@ -182,6 +180,7 @@ public class TeamService {
                 .map(TeamResponse::from)
                 .collect(Collectors.toList());
     }
+
 
     //이미지 저장
     private String saveImage(MultipartFile file) {

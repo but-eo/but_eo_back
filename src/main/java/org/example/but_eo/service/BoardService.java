@@ -109,7 +109,7 @@ public class BoardService {
                 board.getContent(),
                 board.getState(),
                 board.getCategory(),
-                board.getEvent(), // ✅ 종목 포함
+                board.getEvent(), // 종목 포함
                 board.getUser().getName(),
                 fileUrls,
                 board.getLikeCount(),
@@ -132,7 +132,7 @@ public class BoardService {
         board.setTitle(request.getTitle());
         board.setContent(request.getContent());
         board.setCategory(request.getCategory());
-        board.setEvent(request.getEvent()); // ✅ 종목 수정
+        board.setEvent(request.getEvent()); // 종목 수정
         board.setState(request.getState());
         board.setUpdatedAt(LocalDateTime.now());
 
