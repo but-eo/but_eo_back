@@ -18,6 +18,7 @@ import java.util.List;
 @Setter
 public class ChattingMessage {
 
+
     @Id
     @Column(length = 64, nullable = false)
     private String messageId;
@@ -28,6 +29,7 @@ public class ChattingMessage {
             @JoinColumn(name = "chat_id", referencedColumnName = "chat_id", nullable = false)
     })
     private ChattingMember chattingMember;
+
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String message;

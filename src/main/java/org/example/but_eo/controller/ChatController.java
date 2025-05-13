@@ -1,21 +1,25 @@
 package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.but_eo.dto.ChatMessage;
+import org.example.but_eo.dto.ChatRoomDTO;
 import org.example.but_eo.entity.ChatRoom;
 import org.example.but_eo.dto.CreateChatRoomRequest;
+import org.example.but_eo.entity.Users;
 import org.example.but_eo.repository.ChattingMemberRepository;
 import org.example.but_eo.service.ChatRoomService;
 import org.example.but_eo.service.ChattingMessageService;
 import org.example.but_eo.service.RedisChatService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,6 +29,7 @@ import java.util.UUID;
 @Controller
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Slf4j
 public class ChatController {
 
     private final ChatRoomService chatRoomService;
@@ -69,4 +74,19 @@ public class ChatController {
         return ResponseEntity.ok(chatRoom);
     }
 
+    //유저 아이디 -> 채팅방 조회
+    @GetMapping("/searchChatRooms")
+    public ResponseEntity<?> searchChatRoom(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+
+        if (userId == null) {
+            log.warn("인증된 사용자가 없습니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        List<ChatRoomDTO> rooms = chatRoomService.searchChatRooms(userId);
+        System.out.println("현재 접속된 유저 아이디 : " + userId);
+        System.out.println("현재 접속된 유저 채팅방 리스트 : " + rooms);
+        return ResponseEntity.ok(rooms);
+    }
 }
