@@ -50,7 +50,7 @@ public class ChatController {
 
             messagingTemplate.convertAndSendToUser(
                     message.getSender(), // Flutter에서 sender를 유저 고유값으로 설정
-                    "/queue/history",    // 클라이언트가 구독할 주소
+                    "/api/chatroom/ " + message.getChat_id(),    // 클라이언트가 구독할 주소
                     history
             );
 

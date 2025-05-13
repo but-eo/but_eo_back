@@ -163,8 +163,8 @@ public class UsersController {
 
     //닉네임으로 검색
     @GetMapping("/search")
-    public ResponseEntity<List<UserSearchDto>> getUsersByName(@RequestParam String name) {
-        List<Users> users = usersRepository.findByNameContains(name);
+    public ResponseEntity<List<UserSearchDto>> getUsersByName(@RequestParam String name, Authentication authentication) {
+        List<Users> users = usersRepository.findByNameContainingAndUserHashIdNot(name, authentication.getPrincipal().toString());
         List<UserSearchDto> result = users.stream().map(user -> new UserSearchDto(
                 user.getUserHashId(),
                 user.getName(),

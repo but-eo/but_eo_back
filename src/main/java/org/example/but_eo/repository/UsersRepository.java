@@ -26,5 +26,7 @@ public interface UsersRepository extends JpaRepository<Users, String> {
 
     List<Users> findByNameContains(String name);
 
+    List<Users> findByNameContainingAndUserHashIdNot(String name, String userHash);
+
     List<Users> findByUserHashIdIn(List<String> userIds);
 }
