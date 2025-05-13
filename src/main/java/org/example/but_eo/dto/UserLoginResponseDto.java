@@ -9,5 +9,5 @@ public class UserLoginResponseDto {
     private String accessToken;
     private String refreshToken;
     private String userName;
+    private String division; // USER, BUSINESS
 }
-
