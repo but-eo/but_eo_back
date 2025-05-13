@@ -48,7 +48,7 @@ public class BoardService {
         board.setTitle(request.getTitle());
         board.setContent(request.getContent());
         board.setCategory(request.getCategory());
-        board.setEvent(request.getEvent()); // ✅ 종목 설정
+        board.setEvent(request.getEvent()); // 종목 설정
         board.setState(request.getState());
         board.setCreatedAt(LocalDateTime.now());
         board.setUpdatedAt(null);
@@ -73,7 +73,7 @@ public class BoardService {
                 board.getTitle(),
                 board.getUser().getName(),
                 board.getCategory(),
-                board.getEvent(), // ✅ 종목 포함
+                board.getEvent(), // 종목 포함
                 board.getCommentCount(),
                 board.getLikeCount(),
                 board.getCreatedAt()
