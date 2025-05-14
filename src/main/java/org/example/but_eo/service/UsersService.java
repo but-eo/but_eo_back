@@ -22,6 +22,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 @Service
 @RequiredArgsConstructor
 public class UsersService {
@@ -55,8 +59,7 @@ public class UsersService {
             throw new IllegalArgumentException("ADMIN 권한으로는 회원가입이 불가능합니다.");
         }
 
-        if (division == Users.Division.BUSINESS &&
-                (dto.getBusinessNumber() == null || dto.getBusinessNumber().isBlank())) {
+        if (division == Users.Division.BUSINESS && (dto.getBusinessNumber() == null || dto.getBusinessNumber().isBlank())) {
             throw new IllegalArgumentException("사업자는 사업자등록번호를 반드시 입력해야 합니다.");
         }
 
@@ -86,8 +89,20 @@ public class UsersService {
 
 
     private String generateUserHash(String email) {
-        // TODO: SHA-256이나 UUID 등으로 유저 해시 ID 생성
-        return String.valueOf(email.hashCode()); // 간단 예시
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(email.getBytes(StandardCharsets.UTF_8));
+
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashBytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 알고리즘을 사용할 수 없습니다.", e);
+        }
     }
 
     public UserLoginResponseDto login(UserLoginRequestDto dto) {
