@@ -3,13 +3,11 @@ package org.example.but_eo.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.but_eo.dto.ChatMessage;
-import org.example.but_eo.dto.ChatRoomDTO;
-import org.example.but_eo.entity.ChatRoom;
+import org.example.but_eo.dto.ChattingDTO;
 import org.example.but_eo.dto.CreateChatRoomRequest;
-import org.example.but_eo.entity.Users;
-import org.example.but_eo.repository.ChattingMemberRepository;
-import org.example.but_eo.service.ChatRoomService;
+import org.example.but_eo.entity.Chatting;
 import org.example.but_eo.service.ChattingMessageService;
+import org.example.but_eo.service.ChattingService;
 import org.example.but_eo.service.RedisChatService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +15,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +29,7 @@ import java.util.UUID;
 @Slf4j
 public class ChatController {
 
-    private final ChatRoomService chatRoomService;
+    private final ChattingService chattingService;
     private final SimpMessagingTemplate messagingTemplate;
     private final RedisChatService redisChatService;
     private final ChattingMessageService chattingMessageService;
@@ -69,8 +66,8 @@ public class ChatController {
     }
 
     @PostMapping("/chatrooms")
-    public ResponseEntity<ChatRoom> createChatRoom(@RequestBody CreateChatRoomRequest request) {
-        ChatRoom chatRoom = chatRoomService.createChatRoom(request.getUserHashId(), request.getChatRoomName());
+    public ResponseEntity<Chatting> createChatRoom(@RequestBody CreateChatRoomRequest request) {
+        Chatting chatRoom = chattingService.createChatRoom(request.getUserHashId(), request.getChatRoomName());
         return ResponseEntity.ok(chatRoom);
     }
 
@@ -84,7 +81,7 @@ public class ChatController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }
 
-        List<ChatRoomDTO> rooms = chatRoomService.searchChatRooms(userId);
+        List<ChattingDTO> rooms = chattingService.searchChatRooms(userId);
         System.out.println("현재 접속된 유저 아이디 : " + userId);
         System.out.println("현재 접속된 유저 채팅방 리스트 : " + rooms);
         return ResponseEntity.ok(rooms);
