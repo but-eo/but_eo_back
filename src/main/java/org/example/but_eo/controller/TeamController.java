@@ -120,6 +120,17 @@ public class TeamController {
         return ResponseEntity.ok("해당 유저를 팀에서 방출하였습니다.");
     }
 
+    //유저 롤 체크
+    @GetMapping("/{teamId}/role")
+    public ResponseEntity<String> getTeamRole(
+            @PathVariable String teamId,
+            Authentication authentication) {
+
+        String userId = (String) authentication.getPrincipal();
+        String role = teamService.getTeamRole(teamId, userId);
+
+        return ResponseEntity.ok(role);
+    }
 
 
 }
