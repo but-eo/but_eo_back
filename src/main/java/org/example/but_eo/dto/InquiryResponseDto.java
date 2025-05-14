@@ -1,5 +1,7 @@
 package org.example.but_eo.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.but_eo.entity.Inquiry;
@@ -9,30 +11,33 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 public class InquiryResponseDto {
     private String inquiryId;
     private String title;
     private String content;
-    private String userName;
+    private String writerName;
     private Inquiry.Visibility visibility;
-    private String answer;
     private LocalDateTime createdAt;
+
+    private String answerContent;
+    private String adminName;
     private LocalDateTime answeredAt;
 
     public static InquiryResponseDto from(Inquiry inquiry) {
-        InquiryResponseDto dto = new InquiryResponseDto();
-        dto.setInquiryId(inquiry.getInquiryId());
-        dto.setTitle(inquiry.getTitle());
-        dto.setContent(inquiry.getContent());
-        dto.setUserName(inquiry.getUser().getName());
-        dto.setVisibility(inquiry.getVisibility());
-        dto.setCreatedAt(inquiry.getCreatedAt());
-
         InquiryAnswer answer = inquiry.getAnswer();
-        if (answer != null) {
-            dto.setAnswer(answer.getContent());
-            dto.setAnsweredAt(answer.getAnsweredAt());
-        }
-        return dto;
+
+        return InquiryResponseDto.builder()
+                .inquiryId(inquiry.getInquiryId())
+                .title(inquiry.getTitle())
+                .content(inquiry.getContent())
+                .writerName(inquiry.getUser().getName())
+                .visibility(inquiry.getVisibility())
+                .createdAt(inquiry.getCreatedAt())
+                .answerContent(answer != null ? answer.getContent() : null)
+                .adminName(answer != null ? answer.getAdmin().getName() : null)
+                .answeredAt(answer != null ? answer.getAnsweredAt() : null)
+                .build();
     }
 }
