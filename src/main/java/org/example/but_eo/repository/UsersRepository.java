@@ -20,7 +20,6 @@ public interface UsersRepository extends JpaRepository<Users, String> {
     Users findByEmail(String email);
 
     Users findByUserHashId(String userHashId);
-    
 
     List<Users> findAllByName(String name);
 

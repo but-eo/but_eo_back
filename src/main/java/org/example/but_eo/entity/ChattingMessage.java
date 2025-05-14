@@ -36,6 +36,7 @@ public class ChattingMessage {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @Enumerated(EnumType.STRING)
     private MessageType type;
 
     public enum MessageType {
