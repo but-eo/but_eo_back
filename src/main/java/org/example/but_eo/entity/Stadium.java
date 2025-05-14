@@ -1,9 +1,6 @@
 package org.example.but_eo.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -40,6 +37,10 @@ public class Stadium {
 
     @Column(nullable = true)
     private int stadiumCost; // 대여 금액
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id", nullable = false)
+    private Users owner;
 
     @OneToMany(mappedBy = "stadium")
     private List<Matching> matchingList = new ArrayList<>();

@@ -23,15 +23,24 @@ public class InquiryController {
     @PostMapping("/create")
     public ResponseEntity<?> createInquiry(@RequestBody InquiryCreateRequestDto dto, Authentication auth) {
         String userId = (String) auth.getPrincipal();
-        inquiryService.createInquiry(userId, dto.getTitle(), dto.getContent(), dto.getPassword(), dto.getVisibility());
+        inquiryService.createInquiry(userId, dto.getTitle(), dto.getContent(), dto.getPassword());
         return ResponseEntity.ok("문의 등록 성공");
     }
 
-    @GetMapping("/public")
-    public ResponseEntity<List<InquiryResponseDto>> getPublicInquiries(Authentication auth) {
-        String userId = (auth != null) ? (String) auth.getPrincipal() : null;
-        List<Inquiry> list = inquiryService.getPublicAndOwnInquiries(userId);
-        return ResponseEntity.ok(list.stream().map(InquiryResponseDto::from).toList());
+    @GetMapping("/accessible")
+    public ResponseEntity<List<InquiryResponseDto>> getAccessibleInquiries(Authentication auth) {
+        if (auth == null) {
+            List<InquiryResponseDto> publicList = inquiryService.getPublicInquiries().stream()
+                    .map(InquiryResponseDto::from)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(publicList);
+        }
+
+        String userId = (String) auth.getPrincipal();
+        List<InquiryResponseDto> list = inquiryService.getAccessibleInquiries(userId).stream()
+                .map(InquiryResponseDto::from)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/my")
@@ -61,4 +70,3 @@ public class InquiryController {
         return ResponseEntity.ok("답변 등록 완료");
     }
 }
-

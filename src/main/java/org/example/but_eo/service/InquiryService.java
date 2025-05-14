@@ -13,8 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +23,7 @@ public class InquiryService {
     private final UsersRepository usersRepository;
 
     @Transactional
-    public void createInquiry(String userId, String title, String content, String password, Inquiry.Visibility visibility) {
+    public void createInquiry(String userId, String title, String content, String password) {
         Users user = usersRepository.findByUserHashId(userId);
         if (user == null) throw new IllegalArgumentException("유저가 존재하지 않습니다.");
 
@@ -35,24 +33,27 @@ public class InquiryService {
         inquiry.setTitle(title);
         inquiry.setContent(content);
         inquiry.setPassword(password);
-        inquiry.setVisibility(visibility);
+        inquiry.setVisibility(password != null && !password.isBlank() ? Inquiry.Visibility.PRIVATE : Inquiry.Visibility.PUBLIC);
         inquiry.setCreatedAt(LocalDateTime.now());
 
         inquiryRepository.save(inquiry);
     }
 
-    public List<Inquiry> getPublicAndOwnInquiries(String userId) {
-        if (userId == null) {
-            return inquiryRepository.findByVisibility(Inquiry.Visibility.PUBLIC);
+    public List<Inquiry> getAccessibleInquiries(String userId) {
+        Users user = usersRepository.findByUserHashId(userId);
+        if (user == null) throw new IllegalArgumentException("유저가 존재하지 않습니다.");
+
+        if (user.getDivision() == Users.Division.ADMIN) {
+            return inquiryRepository.findAll(); // 관리자: 전체 조회 가능
         }
 
-        Users user = usersRepository.findByUserHashId(userId);
-        List<Inquiry> publicInquiries = inquiryRepository.findByVisibility(Inquiry.Visibility.PUBLIC);
-        List<Inquiry> myPrivate = inquiryRepository.findByUser(user);
+        return inquiryRepository.findAll().stream()
+                .filter(i -> i.getVisibility() == Inquiry.Visibility.PUBLIC || i.getUser().getUserHashId().equals(userId))
+                .toList();
+    }
 
-        return Stream.concat(publicInquiries.stream(), myPrivate.stream())
-                .distinct()
-                .collect(Collectors.toList());
+    public List<Inquiry> getPublicInquiries() {
+        return inquiryRepository.findByVisibility(Inquiry.Visibility.PUBLIC);
     }
 
     public List<Inquiry> getMyInquiries(String userId) {
@@ -69,25 +70,23 @@ public class InquiryService {
             return inquiry;
         }
 
-        if (userId == null) {
-            throw new SecurityException("비공개 글은 로그인 후 열람 가능합니다.");
+        Users user = null;
+        if (userId != null) {
+            user = usersRepository.findByUserHashId(userId);
         }
 
-        Users user = usersRepository.findByUserHashId(userId);
-        if (user == null) throw new IllegalArgumentException("유저가 존재하지 않습니다.");
+        boolean isAdmin = user != null && user.getDivision() == Users.Division.ADMIN;
+        boolean isOwner = user != null && inquiry.getUser().getUserHashId().equals(userId);
 
-        boolean isAdmin = user.getDivision() == Users.Division.ADMIN;
-        boolean isOwner = inquiry.getUser().getUserHashId().equals(userId);
-
-        if (!isAdmin && !isOwner) {
-            throw new SecurityException("해당 비공개 글에 접근할 권한이 없습니다.");
+        if (isAdmin || isOwner) {
+            return inquiry;
         }
 
-        if (!isAdmin && inquiry.getPassword() != null && !inquiry.getPassword().equals(passwordFromRequest)) {
-            throw new SecurityException("비밀번호가 일치하지 않습니다.");
+        if (inquiry.getPassword() != null && inquiry.getPassword().equals(passwordFromRequest)) {
+            return inquiry;
         }
 
-        return inquiry;
+        throw new SecurityException("비공개 글 접근 권한 없음");
     }
 
     @Transactional
