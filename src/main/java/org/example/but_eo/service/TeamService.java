@@ -170,9 +170,7 @@ public class TeamService {
 
     //팀 검색 조건
     public List<TeamResponse> getFilteredTeams(String event, String region, String teamType, String teamCase, String teamName) {
-        List<Team> all = teamRepository.findAll();
-
-        return all.stream()
+        return teamRepository.findAll().stream()
                 .filter(team -> event == null || team.getEvent().name().equalsIgnoreCase(event))
                 .filter(team -> region == null || team.getRegion().contains(region))
                 .filter(team -> teamType == null || team.getTeamType().name().equalsIgnoreCase(teamType))
@@ -183,16 +181,17 @@ public class TeamService {
                 .collect(Collectors.toList());
     }
 
+
     //이미지 저장
     private String saveImage(MultipartFile file) {
         try {
-            String uploadDir = "src/main/resources/static/images/team";
+            String uploadDir = System.getProperty("user.dir") + "/uploads/teams/"; // 변경됨
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
             Path filePath = Paths.get(uploadDir, fileName);
-            Files.createDirectories(filePath.getParent());
+            Files.createDirectories(filePath.getParent()); // 디렉토리 없으면 생성
             Files.write(filePath, file.getBytes());
 
-            return "/images/team/" + fileName;
+            return "/uploads/teams/" + fileName; // 이 경로는 DB 저장용이자 클라이언트 접근용
         } catch (IOException e) {
             throw new RuntimeException("파일 저장 실패", e);
         }

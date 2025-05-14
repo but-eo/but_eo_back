@@ -26,7 +26,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // StompEndpointRegistry = Stomp 엔드포인트를 등록할 때 사용하는 클래스
-        registry.addEndpoint("/ws").setAllowedOrigins("*");
+        registry.addEndpoint("/ws").setAllowedOrigins("*").withSockJS();
         System.out.println("Websocket 엔드포인트 /ws 등록 완료");
     }
 }
