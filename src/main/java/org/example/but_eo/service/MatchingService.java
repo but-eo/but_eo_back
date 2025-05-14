@@ -11,6 +11,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,30 +30,54 @@ public class MatchingService {
 
     @Transactional
     public void createMatch(MatchCreateRequest request, String userId) {
-        // 리더로 있는 팀 찾기
         TeamMember leader = teamMemberRepository.findByUser_UserHashIdAndType(userId, TeamMember.Type.LEADER)
                 .orElseThrow(() -> new RuntimeException("리더 팀이 없습니다."));
 
         Team team = leader.getTeam();
 
-        Stadium stadium = null;
-//        if (request.getStadiumId() != null) {
-//            stadium = stadiumRepository.findById(request.getStadiumId())
-//                    .orElseThrow(() -> new RuntimeException("경기장 없음"));
-//        }
-
         Matching matching = new Matching();
         matching.setMatchId(UUID.randomUUID().toString());
         matching.setTeam(team);
-        matching.setStadium(stadium);
-        matching.setMatchDate(request.getMatchDate());
-        matching.setMatchType(Matching.Match_Type.valueOf(team.getEvent().name())); //팀 종목 그대로 가져오기
-        matching.setLoan(request.getLoan());
+        matching.setRegion(request.getRegion());
         matching.setEtc(request.getEtc());
         matching.setState(Matching.State.WAITING);
-        matching.setRegion(team.getRegion());
+
+        // 날짜 + 시간 파싱
+        LocalDate date;
+        LocalTime time;
+        LocalDateTime matchDate;
+        try {
+            date = LocalDate.parse(request.getMatchDay());
+            time = LocalTime.parse(request.getMatchTime());
+            matchDate = LocalDateTime.of(date, time);
+            matching.setMatchDate(matchDate);
+        } catch (Exception e) {
+            throw new RuntimeException("날짜 또는 시간 형식이 잘못되었습니다.");
+        }
+
+        // 같은 팀이 같은 시간에 등록한 매치가 있는지 확인
+        boolean exists = matchingRepository.existsByTeam_TeamIdAndMatchDate(team.getTeamId(), matchDate);
+        if (exists) {
+            throw new RuntimeException("해당 시간에 이미 등록된 매치가 존재합니다.");
+        }
+
+        // 대여 여부 파싱
+        try {
+            matching.setLoan(Boolean.parseBoolean(request.getLoan()));
+        } catch (Exception e) {
+            throw new RuntimeException("대여 여부 형식이 잘못되었습니다.");
+        }
+
+        // 종목 파싱
+        try {
+            matching.setMatchType(Matching.Match_Type.valueOf(request.getMatchType().toUpperCase()));
+        } catch (Exception e) {
+            throw new RuntimeException("매치 타입이 잘못되었습니다.");
+        }
+
         matchingRepository.save(matching);
     }
+
 
     public Page<MatchingListResponse> getMatchings(Matching.Match_Type matchType, String region, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("matchDate").descending());

@@ -62,6 +62,9 @@ dependencies {
     //chatting
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework:spring-messaging'
+
+    //이메일 인증
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
 
