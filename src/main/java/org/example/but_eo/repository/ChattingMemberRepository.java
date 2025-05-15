@@ -15,9 +15,9 @@ import java.util.List;
 public interface ChattingMemberRepository extends JpaRepository<ChattingMember, ChattingMemberKey> {
     void deleteAllByUser(Users user);
 
-    @Query(value = "select * from chatting_member where chat_id = :chatId", nativeQuery = true)
+    @Query(value = "SELECT * FROM chatting_member WHERE chat_id = :chatId", nativeQuery = true)
     List<ChattingMember> findByChatMemberList(@Param("chatId") String chatId);
 
-    @Query(value = "SELECT * FROM chatting_member WHERE userHashId = :userHashId", nativeQuery = true)
+    @Query(value = "SELECT * FROM chatting_member WHERE user_hash_Id = :userHashId", nativeQuery = true)
     List<ChattingMember> findByUserHashId(@Param("userHashId") String userHashId);
 }

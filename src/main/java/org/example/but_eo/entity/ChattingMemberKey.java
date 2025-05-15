@@ -1,5 +1,6 @@
 package org.example.but_eo.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,7 +16,9 @@ import java.util.Objects;
 @Getter
 @Setter
 public class ChattingMemberKey implements Serializable {
+    @Column(name = "user_hash_id")
     private String userHashId;
+    @Column(name = "chat_id")
     private String chatId;
 
     @Override

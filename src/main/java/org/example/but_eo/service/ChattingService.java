@@ -30,13 +30,14 @@ public class ChattingService {
         chatRoom.setCreatedAt(LocalDateTime.now());
         chatRoom.setState(Chatting.State.PUBLIC);
         chattingRepository.save(chatRoom);
-
+        chattingMemberRepository.flush();
         for (String userId : userIds) {
             Users user = usersRepository.findByUserHashId(userId);
             ChattingMember chattingMember = new ChattingMember();
             chattingMember.setChatting(chatRoom);
             chattingMember.setUser(user);
             chattingMember.setReadCheck(false);
+            chattingMember.setChattingMemberKey(new ChattingMemberKey(user.getUserHashId(), chatRoom.getChatId()));
             chattingMemberRepository.save(chattingMember);
         }
 
@@ -47,7 +48,10 @@ public class ChattingService {
 
     public List<ChattingDTO> searchChatRooms(String userId) {
         List<ChattingMember> rooms = chattingMemberRepository.findByUserHashId(userId);
+        System.out.println(rooms);
         List<ChattingDTO> ChattingDtoList = new ArrayList<>();
+
+
 
         for (ChattingMember room : rooms) {
             List<UserDto> userDtoList = new ArrayList<>();

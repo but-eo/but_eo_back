@@ -42,6 +42,7 @@ public class Board {
     @Column(nullable = false)
     private Event event;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Category category;
 

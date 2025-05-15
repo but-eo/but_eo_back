@@ -66,7 +66,9 @@ public class ChatController {
     }
 
     @PostMapping("/chatrooms")
-    public ResponseEntity<Chatting> createChatRoom(@RequestBody CreateChatRoomRequest request) {
+    public ResponseEntity<Chatting> createChatRoom(@RequestBody CreateChatRoomRequest request, Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        request.getUserHashId().add(userId);
         Chatting chatRoom = chattingService.createChatRoom(request.getUserHashId(), request.getChatRoomName());
         return ResponseEntity.ok(chatRoom);
     }
@@ -83,7 +85,13 @@ public class ChatController {
 
         List<ChattingDTO> rooms = chattingService.searchChatRooms(userId);
         System.out.println("현재 접속된 유저 아이디 : " + userId);
-        System.out.println("현재 접속된 유저 채팅방 리스트 : " + rooms);
+        if (rooms.isEmpty()) {
+            System.out.println("현재 접속된 유저의 채팅방이 없습니다");
+        } else {
+            for (ChattingDTO room : rooms) {
+                System.out.println("현재 접속된 유저 채팅방 리스트 : " + room.getRoomName());
+            }
+        }
         return ResponseEntity.ok(rooms);
     }
 }
