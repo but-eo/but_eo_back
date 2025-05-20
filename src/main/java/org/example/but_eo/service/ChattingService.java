@@ -37,6 +37,7 @@ public class ChattingService {
             chattingMember.setChatting(chatRoom);
             chattingMember.setUser(user);
             chattingMember.setReadCheck(false);
+            chattingMember.setChattingMemberKey(new ChattingMemberKey(user.getUserHashId(), chatRoom.getChatId()));
             chattingMemberRepository.save(chattingMember);
         }
 
@@ -51,6 +52,7 @@ public class ChattingService {
 
         for (ChattingMember room : rooms) {
             List<UserDto> userDtoList = new ArrayList<>();
+
             ChattingDTO chattingDTO = new ChattingDTO();
             chattingDTO.setRoomId(room.getChatting().getChatId());
             chattingDTO.setRoomName(room.getChatting().getTitle());

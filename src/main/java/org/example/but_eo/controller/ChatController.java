@@ -66,7 +66,9 @@ public class ChatController {
     }
 
     @PostMapping("/chatrooms")
-    public ResponseEntity<Chatting> createChatRoom(@RequestBody CreateChatRoomRequest request) {
+    public ResponseEntity<Chatting> createChatRoom(@RequestBody CreateChatRoomRequest request, Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        request.getUserHashId().add(userId);
         Chatting chatRoom = chattingService.createChatRoom(request.getUserHashId(), request.getChatRoomName());
         return ResponseEntity.ok(chatRoom);
     }
