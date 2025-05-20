@@ -49,6 +49,7 @@ public class UsersService {
         }
 
         Users.Division division;
+        Users.LoginType loginType;
         try {
             division = Users.Division.valueOf(dto.getDivision().toUpperCase());
         } catch (IllegalArgumentException e) {
@@ -80,6 +81,9 @@ public class UsersService {
         user.setEmailVerified(true);
         if (division == Users.Division.BUSINESS) {
             user.setBusinessNumber(dto.getBusinessNumber());
+        }
+        if (user.getLoginType() == Users.LoginType.BUTEO) {
+            user.setProfile("/uploads/default/DefaultProfileImage.jpg"); // 기본 프로필 경로 설정
         }
 
         usersRepository.save(user);
