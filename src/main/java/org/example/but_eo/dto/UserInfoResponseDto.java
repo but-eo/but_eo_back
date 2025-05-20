@@ -17,6 +17,7 @@ public class UserInfoResponseDto {
     private String email;
     private String tel;
     private String region;
+    private String division;
     private String preferSports;
     private String gender;
     private String profile;

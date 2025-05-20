@@ -23,7 +23,7 @@ public class ChattingMessageService {
             message.setChat_id(chattingMessage.getChattingMember().getChatting().getChatId());
             message.setSender(chattingMessage.getChattingMember().getUser().getUserHashId());
             message.setMessage(chattingMessage.getMessage());
-            message.setCreatedAt(chattingMessage.getCreatedAt());
+            message.setCreatedAt(chattingMessage.getCreatedAt().toString());
             message.setType(ChatMessage.MessageType.valueOf(chattingMessage.getType().toString()));
             messageList.add(message);
         }
