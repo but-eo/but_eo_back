@@ -115,6 +115,9 @@ public class Users implements UserDetails {
     @Column(nullable = false)
     private LocalDateTime createdAt; //계정 생성일
 
+    @Column(length = 30, nullable = true)
+    private String businessNumber; // 사업자 등록번호 (사업자만 해당)
+
     @OneToMany(mappedBy = "user")
     private List<Board> boardList = new ArrayList<>();
 
