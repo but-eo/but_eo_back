@@ -77,7 +77,7 @@ public class UsersService {
         user.setBirth(dto.getBirthYear());
         user.setRegion(dto.getRegion());
         user.setCreatedAt(LocalDateTime.now());
-
+        user.setEmailVerified(true);
         if (division == Users.Division.BUSINESS) {
             user.setBusinessNumber(dto.getBusinessNumber());
         }

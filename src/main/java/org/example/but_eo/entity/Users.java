@@ -110,4 +110,7 @@ public class Users {
 
     @Column(length = 500)
     private String refreshToken;  // 리프레시 토큰 저장
+
+    @Column(nullable = true)
+    private boolean emailVerified = false;
 }
