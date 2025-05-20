@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -27,6 +28,9 @@ public interface MatchingRepository extends JpaRepository<Matching, String> {
     Page<Matching> findByRegionAndState(String region, Matching.State state, Pageable pageable);
 
     Page<Matching> findByState(Matching.State state, Pageable pageable);
+
+    boolean existsByTeam_TeamIdAndMatchDate(String teamId, LocalDateTime matchDate);
+
 
 }
 

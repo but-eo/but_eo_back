@@ -1,5 +1,6 @@
 package org.example.but_eo.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,10 +14,12 @@ import java.time.LocalDateTime;
 @Setter
 public class ChatMessage {
     private String messageId;
+
+    @JsonProperty("chatroomId")
     private String chat_id;
     private String sender;
     private String message;
-    private LocalDateTime createdAt;
+    private String createdAt;
     private MessageType type;
 
     public enum MessageType {

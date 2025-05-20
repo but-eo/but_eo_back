@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,7 @@ public class UsersController {
     private final UsersService usersService;
     private final JwtUtil jwtUtil;
     private final UsersRepository usersRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/check_email")
     public ResponseEntity<?> checkEmail(@RequestBody EmailRequestDto emailRequestDto) {
@@ -50,7 +52,7 @@ public class UsersController {
     public ResponseEntity<UserLoginResponseDto> login(@RequestBody UserLoginRequestDto dto) {
         System.out.println("로그인 요청 들어옴 : 이메일 = " + dto.getEmail());
         UserLoginResponseDto response = usersService.login(dto);
-        System.out.println("로그인 응답 보냄 : " + response);
+        System.out.println("로그인 응답 보냄 : 유저 이메일 : "+response.getUserName() + " + 계정 유형 : " + response.getDivision());
         return ResponseEntity.ok(response);
     }
 
@@ -152,6 +154,7 @@ public class UsersController {
     public ResponseEntity<UserInfoResponseDto> getMyInfo(Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
         UserInfoResponseDto response = usersService.getUserInfo(userId);
+        System.out.println("접속된 유저 정보 :" + response);
         return ResponseEntity.ok(response);
     }
 
@@ -201,6 +204,42 @@ public class UsersController {
         String userId = (String) authentication.getPrincipal();
         usersService.logout(userId);
         return ResponseEntity.ok("로그아웃 성공");
+    }
+
+    @PostMapping("/find-id")
+    public ResponseEntity<?> findUserIdByTel(@RequestBody Map<String, String> request) {
+        String tel = request.get("tel");
+        if (tel == null || tel.isBlank()) {
+            return ResponseEntity.badRequest().body("전화번호는 필수입니다.");
+        }
+
+        Users user = usersRepository.findByTel(tel);
+        if (user == null) {
+            return ResponseEntity.status(404).body("해당 전화번호로 가입된 계정이 없습니다.");
+        }
+
+        return ResponseEntity.ok(Map.of("email", user.getEmail()));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPasswordDirect(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String tel = request.get("tel");
+        String newPassword = request.get("newPassword");
+
+        if (email == null || tel == null || newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.badRequest().body("모든 항목은 필수입니다.");
+        }
+
+        Users user = usersRepository.findByEmail(email);
+        if (user == null || !tel.equals(user.getTel())) {
+            return ResponseEntity.status(404).body("일치하는 사용자 정보가 없습니다.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        usersRepository.save(user);
+
+        return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
     }
 
 }

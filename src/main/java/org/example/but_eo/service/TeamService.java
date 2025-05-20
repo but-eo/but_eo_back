@@ -288,6 +288,12 @@ public class TeamService {
         teamMemberRepository.delete(target);
     }
 
+    public String getTeamRole(String teamId, String userId) {
+        TeamMemberKey key = new TeamMemberKey(userId, teamId);
+        return teamMemberRepository.findById(key)
+                .map(member -> member.getType().name()) // "LEADER" 또는 "MEMBER"
+                .orElse("NONE");
+    }
 
 
 }

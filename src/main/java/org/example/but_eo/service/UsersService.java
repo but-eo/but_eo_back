@@ -22,6 +22,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 @Service
 @RequiredArgsConstructor
 public class UsersService {
@@ -40,22 +44,29 @@ public class UsersService {
 
     @Transactional
     public void registerUser(UserRegisterRequestDto dto) {
-        // 이메일 중복 확인
         if (usersRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
 
-        // 비밀번호 확인
-//        if (!dto.getPassword().equals(dto.getPasswordCheck())) {
-//            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-//        }
+        Users.Division division;
+        try {
+            division = Users.Division.valueOf(dto.getDivision().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("division 값은 USER 또는 BUSINESS만 가능합니다.");
+        }
 
-        // TODO: 전화번호 인증 코드 검증 로직 추가 필요
+        if (division == Users.Division.ADMIN) {
+            throw new IllegalArgumentException("ADMIN 권한으로는 회원가입이 불가능합니다.");
+        }
+
+        if (division == Users.Division.BUSINESS && (dto.getBusinessNumber() == null || dto.getBusinessNumber().isBlank())) {
+            throw new IllegalArgumentException("사업자는 사업자등록번호를 반드시 입력해야 합니다.");
+        }
 
         Users user = new Users();
-        user.setUserHashId(generateUserHash(dto.getEmail())); // 예: SHA-256 등
+        user.setUserHashId(generateUserHash(dto.getEmail()));
         user.setState(Users.State.ACTIVE);
-        user.setDivision(Users.Division.USER);
+        user.setDivision(division);
         user.setLoginType(Users.LoginType.BUTEO);
         user.setEmail(dto.getEmail());
         user.setName(dto.getName());
@@ -67,14 +78,31 @@ public class UsersService {
         user.setRegion(dto.getRegion());
         user.setCreatedAt(LocalDateTime.now());
 
+        if (division == Users.Division.BUSINESS) {
+            user.setBusinessNumber(dto.getBusinessNumber());
+        }
+
         usersRepository.save(user);
 
-        System.out.println(user.getEmail() + "로 회원가입에 성공했습니다.");
+        System.out.println(user.getEmail() + " 로 회원가입 성공 (division=" + division + ")");
     }
 
+
     private String generateUserHash(String email) {
-        // TODO: SHA-256이나 UUID 등으로 유저 해시 ID 생성
-        return String.valueOf(email.hashCode()); // 간단 예시
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(email.getBytes(StandardCharsets.UTF_8));
+
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashBytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 알고리즘을 사용할 수 없습니다.", e);
+        }
     }
 
     public UserLoginResponseDto login(UserLoginRequestDto dto) {
@@ -101,7 +129,7 @@ public class UsersService {
         user.setRefreshToken(refreshToken);
         usersRepository.save(user);
 
-        return new UserLoginResponseDto(accessToken, refreshToken, user.getName());
+        return new UserLoginResponseDto(accessToken, refreshToken, user.getName(), user.getDivision().name());
     }
 
     //유저 업데이트 로직
@@ -214,6 +242,7 @@ public class UsersService {
                 user.getEmail(),
                 user.getTel(),
                 user.getRegion(),
+                user.getDivision().toString(),
                 user.getPreferSports(),
                 user.getGender(),
                 user.getProfile(),
@@ -240,6 +269,7 @@ public class UsersService {
                 user.getEmail(),
                 user.getTel(),
                 user.getRegion(),
+                user.getDivision().toString(),
                 user.getPreferSports(),
                 user.getGender(),
                 user.getProfile(),
