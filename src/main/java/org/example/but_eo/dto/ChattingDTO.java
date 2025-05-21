@@ -16,5 +16,5 @@ public class ChattingDTO {
     private String roomName;
 
     private String lastMessage; // 마지막 메시지
-    private LocalDateTime lastMessageTime; // 마지막 메시지 시간
+    private String lastMessageTime; // 마지막 메시지 시간
 }

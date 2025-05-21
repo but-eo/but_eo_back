@@ -7,7 +7,9 @@ import org.example.but_eo.entity.*;
 import org.example.but_eo.repository.*;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,8 +54,6 @@ public class ChattingService {
         System.out.println(rooms);
         List<ChattingDTO> ChattingDtoList = new ArrayList<>();
 
-
-
         for (ChattingMember room : rooms) {
             ChattingDTO chattingDTO = new ChattingDTO();
             chattingDTO.setRoomId(room.getChatting().getChatId());
@@ -62,7 +62,7 @@ public class ChattingService {
             List<String> message = redisChatService.getLastMessages(room.getChatting().getChatId());
             if (message != null) {
                 chattingDTO.setLastMessage(message.get(0));
-                chattingDTO.setLastMessageTime(LocalDateTime.parse(message.get(1)));
+                chattingDTO.setLastMessageTime(LastMessageTimeFormat(LocalDateTime.parse(message.get(1))));
             } else {
                 Optional<ChattingMessage> lastMsgOpt = chattingMessageRepository.findLastMessageByChatIdNative(room.getChatting().getChatId());
                 if (lastMsgOpt.isEmpty()) {
@@ -71,7 +71,7 @@ public class ChattingService {
                 } else {
                     ChattingMessage lastMsg = lastMsgOpt.get();
                     chattingDTO.setLastMessage(lastMsg.getMessage());
-                    chattingDTO.setLastMessageTime(lastMsg.getCreatedAt());
+                    chattingDTO.setLastMessageTime(LastMessageTimeFormat(lastMsg.getCreatedAt()));
                 }
             }
 
@@ -79,5 +79,25 @@ public class ChattingService {
         }
 
         return ChattingDtoList;
+    }
+
+    private String LastMessageTimeFormat(LocalDateTime lastMessageTime) {
+        if (lastMessageTime == null) return null;
+
+        Duration duration = Duration.between(lastMessageTime, LocalDateTime.now());
+
+        if (duration.toHours() >= 48) {
+            return lastMessageTime.format(DateTimeFormatter.ofPattern("MM.dd"));
+        } else if (duration.toHours() >= 24) {
+            return "어제";
+        } else {
+            int hour = lastMessageTime.getHour();
+            String minute = String.format("%02d", lastMessageTime.getMinute());
+            if (hour >= 12) {
+                return "오후 " + (hour % 12 == 0 ? 12 : hour % 12) + ":" + minute;
+            } else  {
+                return "오전 " + hour + ":" + minute;
+            }
+        }
     }
 }
