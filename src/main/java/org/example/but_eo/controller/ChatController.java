@@ -8,6 +8,8 @@ import org.example.but_eo.dto.ChatMessage;
 import org.example.but_eo.dto.ChattingDTO;
 import org.example.but_eo.dto.CreateChatRoomRequest;
 import org.example.but_eo.entity.Chatting;
+import org.example.but_eo.entity.Users;
+import org.example.but_eo.repository.UsersRepository;
 import org.example.but_eo.service.ChattingMessageService;
 import org.example.but_eo.service.ChattingService;
 import org.example.but_eo.service.RedisChatService;
@@ -25,6 +27,7 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Controller
@@ -38,6 +41,7 @@ public class ChatController {
     private final ChattingMessageService chattingMessageService;
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
+    private final UsersRepository usersRepository;
 
     @MessageMapping("chat/enter") // 현재 세팅의 경우 클라이언트에서 보낼 때 /app/chat/message -> 클라이언트가 채팅을 보낼때 입장이나 등등
     public void enter(@Payload ChatMessage message) {
@@ -81,6 +85,8 @@ public class ChatController {
             message.setSender(userId);
             message.setMessageId(UUID.randomUUID().toString());
             message.setCreatedAt(LocalDateTime.now().toString());
+            Users user = usersRepository.findByUserHashId(userId);
+            message.setNickName(user.getName());
 
             redisChatService.saveMessageToRedis(message.getChat_id(), message);
             messagingTemplate.convertAndSend("/all/chat/" + message.getChat_id(), message);

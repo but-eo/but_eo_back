@@ -18,6 +18,6 @@ public interface ChattingMemberRepository extends JpaRepository<ChattingMember, 
     @Query(value = "select * from chatting_member where chat_id = :chatId", nativeQuery = true)
     List<ChattingMember> findByChatMemberList(@Param("chatId") String chatId);
 
-    @Query(value = "SELECT * FROM chatting_member WHERE userHashId = :userHashId", nativeQuery = true)
+    @Query(value = "SELECT * FROM chatting_member WHERE user_Hash_Id = :userHashId", nativeQuery = true)
     List<ChattingMember> findByUserHashId(@Param("userHashId") String userHashId);
 }
