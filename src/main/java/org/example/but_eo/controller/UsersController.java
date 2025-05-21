@@ -52,7 +52,7 @@ public class UsersController {
     public ResponseEntity<UserLoginResponseDto> login(@RequestBody UserLoginRequestDto dto) {
         System.out.println("로그인 요청 들어옴 : 이메일 = " + dto.getEmail());
         UserLoginResponseDto response = usersService.login(dto);
-        System.out.println("로그인 응답 보냄 : " + response);
+        System.out.println("로그인 응답 보냄 : 유저 이메일 : "+response.getUserName() + " + 계정 유형 : " + response.getDivision());
         return ResponseEntity.ok(response);
     }
 
@@ -154,6 +154,7 @@ public class UsersController {
     public ResponseEntity<UserInfoResponseDto> getMyInfo(Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
         UserInfoResponseDto response = usersService.getUserInfo(userId);
+        System.out.println("접속된 유저 정보 :" + response);
         return ResponseEntity.ok(response);
     }
 
