@@ -49,6 +49,7 @@ public class UsersService {
         }
 
         Users.Division division;
+        Users.LoginType loginType;
         try {
             division = Users.Division.valueOf(dto.getDivision().toUpperCase());
         } catch (IllegalArgumentException e) {
@@ -77,9 +78,12 @@ public class UsersService {
         user.setBirth(dto.getBirthYear());
         user.setRegion(dto.getRegion());
         user.setCreatedAt(LocalDateTime.now());
-
+        user.setEmailVerified(true);
         if (division == Users.Division.BUSINESS) {
             user.setBusinessNumber(dto.getBusinessNumber());
+        }
+        if (user.getLoginType() == Users.LoginType.BUTEO) {
+            user.setProfile("/uploads/profiles/DefaultProfileImage.png"); // 기본 프로필 경로 설정
         }
 
         usersRepository.save(user);
@@ -161,6 +165,8 @@ public class UsersService {
 
     //이미지 저장 로직
     private String saveProfileImage(MultipartFile file) {
+        validateImageFile(file); // 이미지 파일 검증
+
         try {
             String uploadDir = System.getProperty("user.dir") + "/uploads/profiles/";
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
@@ -172,6 +178,19 @@ public class UsersService {
             return "/uploads/profiles/" + fileName;
         } catch (IOException e) {
             throw new RuntimeException("프로필 이미지 저장 실패", e);
+        }
+
+    }
+
+    private void validateImageFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("이미지 파일만 업로드할 수 있습니다.");
+        }
+
+        String filename = file.getOriginalFilename();
+        if (filename == null || !filename.toLowerCase().matches(".*\\.(jpg|jpeg|png|gif|bmp)$")) {
+            throw new IllegalArgumentException("지원하지 않는 이미지 확장자입니다.");
         }
     }
 
