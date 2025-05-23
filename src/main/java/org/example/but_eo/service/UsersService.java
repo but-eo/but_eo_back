@@ -83,7 +83,7 @@ public class UsersService {
             user.setBusinessNumber(dto.getBusinessNumber());
         }
         if (user.getLoginType() == Users.LoginType.BUTEO) {
-            user.setProfile("/uploads/default/DefaultProfileImage.png"); // 기본 프로필 경로 설정
+            user.setProfile("/uploads/profiles/DefaultProfileImage.png"); // 기본 프로필 경로 설정
         }
 
         usersRepository.save(user);
