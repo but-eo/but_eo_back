@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
 import org.example.but_eo.dto.*;
 import org.example.but_eo.entity.Users;
+import org.example.but_eo.service.MailService;
 import org.example.but_eo.service.UsersService;
 import org.example.but_eo.util.JwtUtil;
 import org.example.but_eo.repository.UsersRepository;
+import org.example.but_eo.util.VerificationStore;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +32,11 @@ import java.util.UUID;
 public class UsersController {
 
     private final UsersService usersService;
+    private final MailService mailService;
     private final JwtUtil jwtUtil;
     private final UsersRepository usersRepository;
     private final PasswordEncoder passwordEncoder;
+    private final VerificationStore verificationStore;
 
     @PostMapping("/check_email")
     public ResponseEntity<?> checkEmail(@RequestBody EmailRequestDto emailRequestDto) {
@@ -44,9 +48,16 @@ public class UsersController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody UserRegisterRequestDto dto) {
+        if (!verificationStore.isVerified(dto.getEmail())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증이 필요합니다.");
+        }
+
         usersService.registerUser(dto);
+        verificationStore.remove(dto.getEmail());
+
         return ResponseEntity.ok("회원가입 성공");
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDto> login(@RequestBody UserLoginRequestDto dto) {
@@ -77,6 +88,7 @@ public class UsersController {
                 newUser.setDivision(Users.Division.USER);
                 newUser.setState(Users.State.ACTIVE);
                 newUser.setLoginType(Users.LoginType.KAKAO);
+                newUser.setEmailVerified(true);
                 newUser.setCreatedAt(LocalDateTime.now());
                 usersRepository.save(newUser);
             } else {
@@ -241,5 +253,27 @@ public class UsersController {
 
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
     }
+    
+    //이메일 인증용
+    @PostMapping("/send-verification")
+    public ResponseEntity<String> sendVerification(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String code = mailService.sendVerificationCode(email);
+        verificationStore.save(email, code);
+        return ResponseEntity.ok("인증 코드 발송 완료");
+    }
+
+    @PostMapping("/verify-code")
+    public ResponseEntity<String> verifyCode(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String code = body.get("code");
+
+        if (verificationStore.verify(email, code)) {
+            return ResponseEntity.ok("인증 성공");
+        } else {
+            return ResponseEntity.badRequest().body("인증 실패");
+        }
+    }
+
 
 }
