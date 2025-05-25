@@ -2,7 +2,6 @@ package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.example.but_eo.dto.*;
 import org.example.but_eo.entity.Users;
 import org.example.but_eo.service.MailService;
@@ -20,10 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -51,19 +47,16 @@ public class UsersController {
         if (!verificationStore.isVerified(dto.getEmail())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증이 필요합니다.");
         }
-
         usersService.registerUser(dto);
         verificationStore.remove(dto.getEmail());
-
         return ResponseEntity.ok("회원가입 성공");
     }
 
-
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDto> login(@RequestBody UserLoginRequestDto dto) {
-        System.out.println("로그인 요청 들어옴 : 이메일 = " + dto.getEmail());
+        log.info("로그인 요청 : 이메일 = {}", dto.getEmail());
         UserLoginResponseDto response = usersService.login(dto);
-        System.out.println("로그인 응답 보냄 : 유저 이메일 : "+response.getUserName() + " + 계정 유형 : " + response.getDivision());
+        log.info("로그인 응답 : 유저 이메일 : {}, 계정 유형 : {}", response.getUserName(), response.getDivision());
         return ResponseEntity.ok(response);
     }
 
@@ -99,7 +92,6 @@ public class UsersController {
                 usersRepository.save(existingUser);
             }
 
-            // 여기서 JWT 처리
             Users savedUser = usersRepository.findByEmail(kakaoLoginDto.getEmail());
             String jwtToken = jwtUtil.generateAccessToken(savedUser.getUserHashId());
 
@@ -107,46 +99,61 @@ public class UsersController {
             result.put("accessToken", jwtToken);
 
             return ResponseEntity.ok(result);
-            //return ResponseEntity.ok("로그인 성공 : " + kakaoLoginDto.getNickName());
-
         } catch (Exception e) {
-            e.printStackTrace();
-            //return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그인 실패");
+            log.error("카카오 로그인 실패", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "로그인 실패"));
         }
     }
 
+    // ⭐ [수정] 항상 JSON 리턴
     @GetMapping("/my-info")
-    public ResponseEntity<String> myInfo(Authentication authentication) {
-        String userId = (String) authentication.getPrincipal();
-        return ResponseEntity.ok("현재 로그인된 사용자 ID: " + userId);
+    public ResponseEntity<?> myInfo(Authentication authentication) {
+        try {
+            String userId = (String) authentication.getPrincipal();
+            UserInfoResponseDto response = usersService.getUserInfo(userId);
+            log.info("[my-info] 사용자 정보: {}", response);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("[my-info] 사용자 정보 조회 실패", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "사용자 정보 조회 실패", "detail", e.getMessage()));
+        }
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String refreshToken) {
         String token = refreshToken.replace("Bearer ", "");
-
         if (!jwtUtil.validateToken(token)) {
             return ResponseEntity.status(401).body("Refresh Token이 유효하지 않습니다.");
         }
-
         String userId = jwtUtil.getUserIdFromToken(token);
-
         Users user = usersRepository.findByUserHashId(userId);
         if (user == null || !token.equals(user.getRefreshToken())) {
             return ResponseEntity.status(401).body("Refresh Token이 일치하지 않습니다.");
         }
-
         String newAccessToken = jwtUtil.generateAccessToken(userId);
         return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
     }
 
     @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateUser(@ModelAttribute UserUpdateRequestDto request, Authentication authentication) {
-        String userId = (String) authentication.getPrincipal();
-        usersService.updateUser(userId, request);
-        return ResponseEntity.ok("회원 정보 수정 완료");
+    public ResponseEntity<?> updateUser(
+            @ModelAttribute UserUpdateRequestDto request,
+            Authentication authentication) {
+        try {
+            String userId = (String) authentication.getPrincipal();
+            usersService.updateUser(userId, request);
+            return ResponseEntity.ok("회원 정보 수정 완료");
+        } catch (IllegalArgumentException e) {
+            // 클라이언트 요청 오류
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            // 서버 오류
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("회원정보 수정 중 오류: " + e.getMessage());
+        }
     }
+
 
     @DeleteMapping("/delete")
     public ResponseEntity<String> deleteUser(Authentication authentication) {
@@ -163,11 +170,17 @@ public class UsersController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserInfoResponseDto> getMyInfo(Authentication authentication) {
-        String userId = (String) authentication.getPrincipal();
-        UserInfoResponseDto response = usersService.getUserInfo(userId);
-        System.out.println("접속된 유저 정보 :" + response);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> getMyInfo(Authentication authentication) {
+        try {
+            String userId = (String) authentication.getPrincipal();
+            UserInfoResponseDto response = usersService.getUserInfo(userId);
+            log.info("[/me] 사용자 정보: {}", response);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("[/me] 사용자 정보 조회 실패", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "사용자 정보 조회 실패", "detail", e.getMessage()));
+        }
     }
 
     @GetMapping("/{userHashId}")
@@ -185,7 +198,6 @@ public class UsersController {
                 user.getName(),
                 user.getProfile()
         )).toList();
-
         return ResponseEntity.ok(result);
     }
 
@@ -197,7 +209,6 @@ public class UsersController {
                 user.getName(),
                 user.getProfile()
         )).toList();
-
         return ResponseEntity.ok(result);
     }
 
@@ -209,8 +220,7 @@ public class UsersController {
             return "소셜 로그인 성공! 유저 이름: " + oAuth2User.getAttribute("name");
         }
     }
-    
-    //로그아웃
+
     @PostMapping("/logout")
     public ResponseEntity<String> logout(Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
@@ -224,12 +234,10 @@ public class UsersController {
         if (tel == null || tel.isBlank()) {
             return ResponseEntity.badRequest().body("전화번호는 필수입니다.");
         }
-
         Users user = usersRepository.findByTel(tel);
         if (user == null) {
             return ResponseEntity.status(404).body("해당 전화번호로 가입된 계정이 없습니다.");
         }
-
         return ResponseEntity.ok(Map.of("email", user.getEmail()));
     }
 
@@ -238,22 +246,18 @@ public class UsersController {
         String email = request.get("email");
         String tel = request.get("tel");
         String newPassword = request.get("newPassword");
-
         if (email == null || tel == null || newPassword == null || newPassword.isBlank()) {
             return ResponseEntity.badRequest().body("모든 항목은 필수입니다.");
         }
-
         Users user = usersRepository.findByEmail(email);
         if (user == null || !tel.equals(user.getTel())) {
             return ResponseEntity.status(404).body("일치하는 사용자 정보가 없습니다.");
         }
-
         user.setPassword(passwordEncoder.encode(newPassword));
         usersRepository.save(user);
-
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
     }
-    
+
     //이메일 인증용
     @PostMapping("/send-verification")
     public ResponseEntity<String> sendVerification(@RequestBody Map<String, String> body) {
@@ -267,13 +271,10 @@ public class UsersController {
     public ResponseEntity<String> verifyCode(@RequestBody Map<String, String> body) {
         String email = body.get("email");
         String code = body.get("code");
-
         if (verificationStore.verify(email, code)) {
             return ResponseEntity.ok("인증 성공");
         } else {
             return ResponseEntity.badRequest().body("인증 실패");
         }
     }
-
-
 }
