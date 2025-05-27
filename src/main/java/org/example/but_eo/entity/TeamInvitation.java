@@ -33,11 +33,29 @@ public class TeamInvitation {
 
     private LocalDateTime createdAt;
 
-    public static TeamInvitation create(Team team, Users user) {
+    public enum Direction {
+        INVITE, REQUEST
+    }
+
+    @Enumerated(EnumType.STRING)
+    private Direction direction;
+
+    public static TeamInvitation createInvite(Team team, Users user) {
         return TeamInvitation.builder()
                 .team(team)
                 .user(user)
                 .status(Status.PENDING)
+                .direction(Direction.INVITE)
+                .createdAt(LocalDateTime.now())
+                .build();
+    }
+
+    public static TeamInvitation createRequest(Team team, Users user) {
+        return TeamInvitation.builder()
+                .team(team)
+                .user(user)
+                .status(Status.PENDING)
+                .direction(Direction.REQUEST)
                 .createdAt(LocalDateTime.now())
                 .build();
     }
