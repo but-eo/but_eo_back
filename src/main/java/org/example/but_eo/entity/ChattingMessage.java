@@ -17,34 +17,34 @@ import java.util.List;
 @Setter
 public class ChattingMessage {
 
+
     @Id
     @Column(length = 64, nullable = false)
     private String messageId;
 
     @ManyToOne
     @JoinColumns({
-            @JoinColumn(name = "user_hash_id", referencedColumnName = "user_hash_id", nullable = false),
+            @JoinColumn(name = "sender", referencedColumnName = "user_hash_id", nullable = false),
             @JoinColumn(name = "chat_id", referencedColumnName = "chat_id", nullable = false)
     })
     private ChattingMember chattingMember;
+
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String message;
 
     @Column(nullable = false)
-    private boolean readCheck;
-
-    public enum Division{
-        USER, ADMIN, BUSINESS
-    }; //유저, 관리자, 사업자
+    private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Division division;
+    private MessageType type;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+    public enum MessageType {
+        ENTER, TALK, EXIT
+    }
 
     @OneToMany(mappedBy = "chattingMessage")
     private List<ChattingMessageMapping> chattingMessageMappinglist = new ArrayList<>();
+
+
 }
