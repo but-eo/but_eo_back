@@ -18,7 +18,6 @@ public class RedisChatService { // Redis 사용하여 채팅을 임시저장
     public void saveMessageToRedis(String roomId, ChatMessage message) {
         String key = "chatroom:" + roomId;
         redisTemplate.opsForList().leftPush(key, message); // 레디스에 리스트로 채팅 내역을 저장
-
         // 리스트의 길이 제한 최근 50개의 내역만을 유지함 - 데이터 소실을 방지하기 위해 사용하지 않음
         //redisTemplate.opsForList().trim(key, 0, MAX_CHAT_HISTORY_SIZE - 1);
     }
