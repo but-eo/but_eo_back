@@ -71,6 +71,9 @@ dependencies {
 
     //이메일 인증
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    //jackson 직렬화
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 }
 
 

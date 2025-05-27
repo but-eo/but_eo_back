@@ -14,6 +14,7 @@ public class MailService {
 
     public String sendVerificationCode(String toEmail) {
         if (!isValidEmail(toEmail)) {
+            System.out.println("전송 이메일 : " + toEmail);
             throw new IllegalArgumentException("유효하지 않은 이메일 형식입니다.");
         }
 

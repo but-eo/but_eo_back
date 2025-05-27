@@ -7,7 +7,9 @@ import org.example.but_eo.entity.*;
 import org.example.but_eo.repository.*;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +23,7 @@ public class ChattingService {
     private final UsersRepository usersRepository;
     private final ChattingMemberRepository chattingMemberRepository;
     private final ChattingMessageRepository chattingMessageRepository;
+    private final RedisChatService redisChatService;
 
     //채팅방 생성
     public Chatting createChatRoom(List<String> userIds, String chatRoomName) {
@@ -51,39 +54,50 @@ public class ChattingService {
         System.out.println(rooms);
         List<ChattingDTO> ChattingDtoList = new ArrayList<>();
 
-
-
         for (ChattingMember room : rooms) {
-            List<UserDto> userDtoList = new ArrayList<>();
             ChattingDTO chattingDTO = new ChattingDTO();
             chattingDTO.setRoomId(room.getChatting().getChatId());
             chattingDTO.setRoomName(room.getChatting().getTitle());
 
-            List<ChattingMember> members = chattingMemberRepository.findByChatMemberList(room.getChatting().getChatId());
-
-            for (ChattingMember member : members) {
-                UserDto userDto = new UserDto();
-                userDto.setUserId(member.getUser().getUserHashId());
-                userDto.setNickName(member.getUser().getName());
-                userDto.setProfile(member.getUser().getProfile());
-                userDtoList.add(userDto);
-            }
-            chattingDTO.setUsers(userDtoList);
-
-            Optional<ChattingMessage> lastMsgOpt = chattingMessageRepository.findLastMessageByChatIdNative(room.getChatting().getChatId());
-
-            if (lastMsgOpt.isEmpty()) {
-                chattingDTO.setLastMessage(null);
-                chattingDTO.setLastMessageTime(null);
+            List<String> message = redisChatService.getLastMessages(room.getChatting().getChatId());
+            if (message != null) {
+                chattingDTO.setLastMessage(message.get(0));
+                chattingDTO.setLastMessageTime(LastMessageTimeFormat(LocalDateTime.parse(message.get(1))));
             } else {
-                ChattingMessage lastMsg = lastMsgOpt.get();
-                chattingDTO.setLastMessage(lastMsg.getMessage());
-                chattingDTO.setLastMessageTime(lastMsg.getCreatedAt());
+                Optional<ChattingMessage> lastMsgOpt = chattingMessageRepository.findLastMessageByChatIdNative(room.getChatting().getChatId());
+                if (lastMsgOpt.isEmpty()) {
+                    chattingDTO.setLastMessage(null);
+                    chattingDTO.setLastMessageTime(null);
+                } else {
+                    ChattingMessage lastMsg = lastMsgOpt.get();
+                    chattingDTO.setLastMessage(lastMsg.getMessage());
+                    chattingDTO.setLastMessageTime(LastMessageTimeFormat(lastMsg.getCreatedAt()));
+                }
             }
 
             ChattingDtoList.add(chattingDTO);
         }
 
         return ChattingDtoList;
+    }
+
+    private String LastMessageTimeFormat(LocalDateTime lastMessageTime) {
+        if (lastMessageTime == null) return null;
+
+        Duration duration = Duration.between(lastMessageTime, LocalDateTime.now());
+
+        if (duration.toHours() >= 48) {
+            return lastMessageTime.format(DateTimeFormatter.ofPattern("MM.dd"));
+        } else if (duration.toHours() >= 24) {
+            return "어제";
+        } else {
+            int hour = lastMessageTime.getHour();
+            String minute = String.format("%02d", lastMessageTime.getMinute());
+            if (hour >= 12) {
+                return "오후 " + (hour % 12 == 0 ? 12 : hour % 12) + ":" + minute;
+            } else  {
+                return "오전 " + hour + ":" + minute;
+            }
+        }
     }
 }

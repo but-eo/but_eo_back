@@ -140,5 +140,5 @@ public class Users implements UserDetails {
     private String refreshToken;  // 리프레시 토큰 저장
 
     @Column(nullable = true)
-    private boolean emailVerified = false;
+    private Boolean emailVerified = false;
 }
