@@ -34,4 +34,7 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, TeamMemb
 
     Optional<TeamMember> findByUser_UserHashIdAndType(String userId, TeamMember.Type type);
 
+    List<TeamMember> findAllByUser_UserHashIdAndType(String userHashId, TeamMember.Type type);
+
+
 }

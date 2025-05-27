@@ -132,5 +132,11 @@ public class TeamController {
         return ResponseEntity.ok(role);
     }
 
+    @GetMapping("/my-leader-teams")
+    public ResponseEntity<List<TeamResponse>> getMyLeaderTeams(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        List<TeamResponse> teams = teamService.getTeamsWhereUserIsLeader(userId);
+        return ResponseEntity.ok(teams);
+    }
 
 }

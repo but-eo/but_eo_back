@@ -295,5 +295,12 @@ public class TeamService {
                 .orElse("NONE");
     }
 
+    public List<TeamResponse> getTeamsWhereUserIsLeader(String userId) {
+        List<TeamMember> leaderMemberships = teamMemberRepository.findAllByUser_UserHashIdAndType(userId, TeamMember.Type.LEADER);
+        return leaderMemberships.stream()
+                .map(TeamMember::getTeam)
+                .map(TeamResponse::from)
+                .collect(Collectors.toList());
+    }
 
 }
