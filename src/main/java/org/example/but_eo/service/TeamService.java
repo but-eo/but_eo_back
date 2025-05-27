@@ -172,11 +172,7 @@ public class TeamService {
                 .orElse("NONE");
     }
 
-<<<<<<< HEAD
     // 리더로 있는 팀 목록 조회
-=======
-
->>>>>>> 21f84175ed323b60956bbe99e74bf798c3a34845
     public List<TeamResponse> getTeamsWhereUserIsLeader(String userId) {
         List<TeamMember> leaderMemberships = teamMemberRepository.findAllByUser_UserHashIdAndType(userId, TeamMember.Type.LEADER);
         return leaderMemberships.stream()
@@ -185,7 +181,6 @@ public class TeamService {
                 .collect(Collectors.toList());
     }
 
-<<<<<<< HEAD
     // 내부 이미지 저장 헬퍼
     private String saveImage(MultipartFile file) {
         try {
@@ -199,7 +194,4 @@ public class TeamService {
             throw new RuntimeException("파일 저장 실패", e);
         }
     }
-=======
-
->>>>>>> 21f84175ed323b60956bbe99e74bf798c3a34845
 }
