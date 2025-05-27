@@ -295,12 +295,12 @@ public class TeamService {
                 .orElse("NONE");
     }
 
-    // 리더인 팀 조회
+
     public List<TeamResponse> getTeamsWhereUserIsLeader(String userId) {
-        List<TeamMember> leaderMemberships = teamMemberRepository.findByUser_UserHashIdAndType(userId, TeamMember.Type.LEADER);
+        List<TeamMember> leaderMemberships = teamMemberRepository.findAllByUser_UserHashIdAndType(userId, TeamMember.Type.LEADER);
         return leaderMemberships.stream()
                 .map(TeamMember::getTeam)
-                .map(TeamResponse::from)  // 또는 fromEntity 등 적절한 변환 메서드
+                .map(TeamResponse::from)
                 .collect(Collectors.toList());
     }
 
