@@ -5,6 +5,7 @@ import org.example.but_eo.dto.ChatMessage;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -26,5 +27,17 @@ public class RedisChatService { // Redis 사용하여 채팅을 임시저장
         String key = "chatroom:" + roomId;
         List<Object> rawList = redisTemplate.opsForList().range(key, 0, -1);
         return rawList.stream().map(o -> (ChatMessage) o).toList();
+    }
+
+    public List<String> getLastMessages(String roomId) {
+        String key = "chatroom:" + roomId;
+        ChatMessage rawData = (ChatMessage)redisTemplate.opsForList().getFirst(key);
+        if (rawData != null) {
+            List<String> message = new ArrayList<>();
+            message.add(rawData.getMessage());
+            message.add(rawData.getCreatedAt());
+            return message;
+        }
+        return null;
     }
 }

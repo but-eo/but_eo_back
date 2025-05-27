@@ -257,10 +257,12 @@ public class UsersService {
         if (user == null) throw new IllegalArgumentException("사용자 없음");
 
         return new UserInfoResponseDto(
+                user.getUserHashId(),
                 user.getName(),
                 user.getEmail(),
                 user.getTel(),
                 user.getRegion(),
+                user.getDivision().toString(),
                 user.getPreferSports(),
                 user.getGender(),
                 user.getProfile(),
@@ -283,10 +285,12 @@ public class UsersService {
     
     private UserInfoResponseDto convertToDto(Users user) {
         return new UserInfoResponseDto(
+                user.getUserHashId(),
                 user.getName(),
                 user.getEmail(),
                 user.getTel(),
                 user.getRegion(),
+                user.getDivision().toString(),
                 user.getPreferSports(),
                 user.getGender(),
                 user.getProfile(),
