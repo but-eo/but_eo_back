@@ -138,5 +138,4 @@ public class TeamController {
         List<TeamResponse> teams = teamService.getTeamsWhereUserIsLeader(userId);
         return ResponseEntity.ok(teams);
     }
-
 }

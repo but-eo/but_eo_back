@@ -18,7 +18,7 @@ import java.util.List;
 public class Chatting {
 
     @Id
-    @Column(length = 64, nullable = false)
+    @Column( length = 64, nullable = false)
     private String chatId;
 
     public enum State {

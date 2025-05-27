@@ -20,11 +20,12 @@ public interface UsersRepository extends JpaRepository<Users, String> {
     Users findByEmail(String email);
 
     Users findByUserHashId(String userHashId);
-    
 
     List<Users> findAllByName(String name);
 
     List<Users> findByNameContains(String name);
+
+    List<Users> findByNameContainingAndUserHashIdNot(String name, String userHash);
 
     List<Users> findByUserHashIdIn(List<String> userIds);
 
