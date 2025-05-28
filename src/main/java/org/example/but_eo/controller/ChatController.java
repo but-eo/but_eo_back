@@ -4,12 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.but_eo.dto.ChatMember;
 import org.example.but_eo.dto.ChatMessage;
 import org.example.but_eo.dto.ChattingDTO;
 import org.example.but_eo.dto.CreateChatRoomRequest;
 import org.example.but_eo.entity.Chatting;
-import org.example.but_eo.entity.Users;
-import org.example.but_eo.repository.UsersRepository;
 import org.example.but_eo.service.ChattingMessageService;
 import org.example.but_eo.service.ChattingService;
 import org.example.but_eo.service.RedisChatService;
@@ -27,7 +26,6 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Controller
@@ -41,7 +39,7 @@ public class ChatController {
     private final ChattingMessageService chattingMessageService;
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
-    private final UsersRepository usersRepository;
+    private String roomId;
 
     @MessageMapping("chat/enter") // 현재 세팅의 경우 클라이언트에서 보낼 때 /app/chat/message -> 클라이언트가 채팅을 보낼때 입장이나 등등
     public void enter(@Payload ChatMessage message) {
@@ -51,7 +49,7 @@ public class ChatController {
         if (message.getType() == ChatMessage.MessageType.ENTER) { // 메세지 타입이 입장일 경우
             message.setMessage(message.getSender() + "님이 입장하셨습니다"); // 개발 단계에서만 보이게끔
 
-            //과거 메시지 조회
+            // 🔽 과거 메시지 조회
 //            List<ChatMessage> history = redisChatService.getRecentMessages(message.getRoomId());
 
             List<ChatMessage> history = new ArrayList<>();
@@ -85,8 +83,6 @@ public class ChatController {
             message.setSender(userId);
             message.setMessageId(UUID.randomUUID().toString());
             message.setCreatedAt(LocalDateTime.now().toString());
-            Users user = usersRepository.findByUserHashId(userId);
-            message.setNickName(user.getName());
 
             redisChatService.saveMessageToRedis(message.getChat_id(), message);
             messagingTemplate.convertAndSend("/all/chat/" + message.getChat_id(), message);
@@ -101,6 +97,7 @@ public class ChatController {
     @GetMapping("/load/messages/{roomId}")
     @ResponseBody
     public List<ChatMessage> getMessages(@PathVariable String roomId) {
+        this.roomId = roomId;
         String key = "chatroom:" + roomId;
 
         //Flutter에서는 메세지를 Map으로 파싱하려고 함 -> 역직렬화 필요
@@ -118,6 +115,12 @@ public class ChatController {
         }
         System.out.println(messages);
         return messages;
+    }
+
+    @GetMapping("/load/members/{roomId}")
+    @ResponseBody
+    public List<ChatMember> getMembers(@PathVariable String roomId) {
+        return chattingService.getChatMembers(roomId);
     }
 
 
@@ -150,5 +153,12 @@ public class ChatController {
             }
         }
         return ResponseEntity.ok(rooms);
+    }
+
+    @PostMapping("/exit/ChatRoom/{roomId}")
+    public ResponseEntity<Void> exitChatRoom(@PathVariable String roomId, Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        chattingService.exitChatRoom(roomId, userId);
+        return ResponseEntity.noContent().build();
     }
 }
