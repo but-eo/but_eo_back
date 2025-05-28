@@ -51,7 +51,7 @@ public class ChatController {
         if (message.getType() == ChatMessage.MessageType.ENTER) { // 메세지 타입이 입장일 경우
             message.setMessage(message.getSender() + "님이 입장하셨습니다"); // 개발 단계에서만 보이게끔
 
-            // 🔽 과거 메시지 조회
+            //과거 메시지 조회
 //            List<ChatMessage> history = redisChatService.getRecentMessages(message.getRoomId());
 
             List<ChatMessage> history = new ArrayList<>();
