@@ -1,11 +1,13 @@
 package org.example.but_eo.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.but_eo.dto.ChatMember;
 import org.example.but_eo.dto.ChattingDTO;
 import org.example.but_eo.dto.UserDto;
 import org.example.but_eo.entity.*;
 import org.example.but_eo.repository.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -99,5 +101,21 @@ public class ChattingService {
                 return "오전 " + hour + ":" + minute;
             }
         }
+    }
+
+    public void exitChatRoom(String chatRoomId, String userId) {
+        chattingMemberRepository.deleteChattingMember(chatRoomId, userId);
+    }
+
+    public List<ChatMember> getChatMembers(String roomId) {
+        List<ChatMember> memberList = new ArrayList<>();
+        List<ChattingMember> membersData = chattingMemberRepository.findByChatMemberList(roomId);
+        for (ChattingMember memberData : membersData) {
+            ChatMember member = new ChatMember();
+            member.setNickName(memberData.getUser().getName());
+            member.setProfile(memberData.getUser().getProfile());
+            memberList.add(member);
+        }
+        return memberList;
     }
 }
