@@ -17,6 +17,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
+
         registry.enableSimpleBroker("/user", "/all"); // /user로 시작하면 알람 발송
 
         registry.setApplicationDestinationPrefixes("/app"); // /app으로 시작하는 stomp메세지의 경로는 @Controller @MessageMapping 메서드로 라우팅
