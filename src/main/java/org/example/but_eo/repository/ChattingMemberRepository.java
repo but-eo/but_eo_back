@@ -1,5 +1,6 @@
 package org.example.but_eo.repository;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 import org.example.but_eo.entity.Chatting;
@@ -26,6 +27,7 @@ public interface ChattingMemberRepository extends JpaRepository<ChattingMember, 
 
     @Modifying
     @Query(value = "DELETE FROM chatting_member WHERE user_hash_id = :userHashId AND chat_id = :chatId", nativeQuery = true)
+    @Transactional
     void deleteChattingMember(@Param("userHashId") String userHashId, @Param("chatId") String chatId);
 
 }

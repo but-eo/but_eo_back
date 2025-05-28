@@ -120,6 +120,10 @@ public class ChatController {
     @GetMapping("/load/members/{roomId}")
     @ResponseBody
     public List<ChatMember> getMembers(@PathVariable String roomId) {
+        List<ChatMember> members = chattingService.getChatMembers(roomId);
+        if(members!=null) {
+            System.out.println("채팅방 소속 인원 : " + members);
+        }
         return chattingService.getChatMembers(roomId);
     }
 
@@ -158,6 +162,9 @@ public class ChatController {
     @PostMapping("/exit/ChatRoom/{roomId}")
     public ResponseEntity<Void> exitChatRoom(@PathVariable String roomId, Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
+        if(userId!=null){
+            System.out.println("채팅방 : " + roomId + "나간 인원 : " + userId);
+        }
         chattingService.exitChatRoom(roomId, userId);
         return ResponseEntity.noContent().build();
     }
