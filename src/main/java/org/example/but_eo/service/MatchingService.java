@@ -54,7 +54,7 @@ public class MatchingService {
         } catch (Exception e) {
             throw new RuntimeException("날짜 또는 시간 형식이 잘못되었습니다.");
         }
-
+    
         // 같은 팀이 같은 시간에 등록한 매치가 있는지 확인
         boolean exists = matchingRepository.existsByTeam_TeamIdAndMatchDate(team.getTeamId(), matchDate);
         if (exists) {

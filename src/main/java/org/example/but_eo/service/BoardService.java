@@ -49,7 +49,7 @@ public class BoardService {
         board.setContent(request.getContent());
         board.setCategory(request.getCategory());
         board.setEvent(request.getEvent()); // 종목 설정
-        board.setState(request.getState());
+        board.setState(Board.State.PUBLIC);
         board.setCreatedAt(LocalDateTime.now());
         board.setUpdatedAt(null);
         board.setCommentCount(0);

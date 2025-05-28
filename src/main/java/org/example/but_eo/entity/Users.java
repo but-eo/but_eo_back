@@ -138,4 +138,7 @@ public class Users implements UserDetails {
 
     @Column(length = 500)
     private String refreshToken;  // 리프레시 토큰 저장
+
+    @Column(nullable = true)
+    private Boolean emailVerified = false;
 }
