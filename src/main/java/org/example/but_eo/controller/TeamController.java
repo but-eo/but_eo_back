@@ -1,6 +1,7 @@
 package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.but_eo.dto.TeamJoinRequestDto;
 import org.example.but_eo.dto.TeamResponse;
 import org.example.but_eo.dto.UpdateTeamRequest;
 import org.example.but_eo.entity.Team;
@@ -94,5 +95,14 @@ public class TeamController {
         String userId = (String) authentication.getPrincipal();
         List<TeamResponse> teams = teamService.getTeamsWhereUserIsLeader(userId);
         return ResponseEntity.ok(teams);
+    }
+
+    // 팀 신청 조회
+    @GetMapping("/team/{teamId}/requests")
+    public ResponseEntity<List<TeamJoinRequestDto>> getJoinRequests(
+            @PathVariable String teamId,
+            @RequestParam String leaderId
+    ) {
+        return ResponseEntity.ok(teamService.getJoinRequests(teamId, leaderId));
     }
 }
