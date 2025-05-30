@@ -39,7 +39,6 @@ public class ChatController {
     private final ChattingMessageService chattingMessageService;
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
-    private String roomId;
 
     @MessageMapping("chat/enter") // 현재 세팅의 경우 클라이언트에서 보낼 때 /app/chat/message -> 클라이언트가 채팅을 보낼때 입장이나 등등
     public void enter(@Payload ChatMessage message) {
@@ -77,11 +76,12 @@ public class ChatController {
     @MessageMapping("/chat/message")
     public void message(@Payload ChatMessage message, Principal principal) {
         if(principal!=null){
-            String userId = (String) principal.getName();
+            String userId = principal.getName();
             System.out.println(userId);
 
             message.setSender(userId);
             message.setMessageId(UUID.randomUUID().toString());
+            message.setNickName(chattingService.getNickName(userId));
             message.setCreatedAt(LocalDateTime.now().toString());
 
             redisChatService.saveMessageToRedis(message.getChat_id(), message);
@@ -97,17 +97,16 @@ public class ChatController {
     @GetMapping("/load/messages/{roomId}")
     @ResponseBody
     public List<ChatMessage> getMessages(@PathVariable String roomId) {
-        this.roomId = roomId;
         String key = "chatroom:" + roomId;
 
         //Flutter에서는 메세지를 Map으로 파싱하려고 함 -> 역직렬화 필요
         List<String> rawMessages = redisTemplate.opsForList().range(key, 0, -1);
-        ObjectMapper mapper = new ObjectMapper(); //Jackson
+//        ObjectMapper mapper = new ObjectMapper();
         List<ChatMessage> messages = new ArrayList<>();
 
         for(String json : rawMessages){
             try {
-                ChatMessage message = objectMapper.readValue(json, ChatMessage.class);
+                ChatMessage message = objectMapper.readValue(json, ChatMessage.class); //Jackson
                 messages.add(message);
             }catch (JsonProcessingException e) {
                 e.printStackTrace();

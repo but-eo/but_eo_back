@@ -1,13 +1,12 @@
 package org.example.but_eo.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.but_eo.dto.ChatMember;
 import org.example.but_eo.dto.ChattingDTO;
-import org.example.but_eo.dto.UserDto;
 import org.example.but_eo.entity.*;
 import org.example.but_eo.repository.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -17,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChattingService {
@@ -105,6 +105,7 @@ public class ChattingService {
 
     public void exitChatRoom(String chatRoomId, String userId) {
         chattingMemberRepository.deleteChattingMember(chatRoomId, userId);
+        log.warn("채팅방 나가기 쿼리문 실행(완)");
     }
 
     public List<ChatMember> getChatMembers(String roomId) {
@@ -117,5 +118,10 @@ public class ChattingService {
             memberList.add(member);
         }
         return memberList;
+    }
+
+    public String getNickName(String userId) {
+        Users user = usersRepository.findByUserHashId(userId);
+        return user.getName();
     }
 }
