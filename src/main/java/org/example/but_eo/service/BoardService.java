@@ -109,6 +109,7 @@ public class BoardService {
         return new BoardDetailResponse(
                 board.getBoardId(),
                 board.getTitle(),
+                board.getUser().getUserHashId(),
                 board.getContent(),
                 board.getState(),
                 board.getCategory(),
