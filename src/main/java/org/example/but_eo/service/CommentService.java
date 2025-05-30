@@ -53,6 +53,7 @@ public class CommentService {
         return commentList.stream().map(comment -> new CommentResponse(
                 comment.getCommentId(),
                 comment.getUser().getName(),
+                comment.getUser().getUserHashId(),
                 comment.getContent(),
                 comment.getCreateAt(),
                 comment.getLikeCount()
