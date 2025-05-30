@@ -164,7 +164,7 @@ public class ChatController {
         if(userId!=null){
             System.out.println("채팅방 : " + roomId + "나간 인원 : " + userId);
         }
-        chattingService.exitChatRoom(roomId, userId);
+        chattingService.exitChatRoom(userId, roomId);
         return ResponseEntity.noContent().build();
     }
 }

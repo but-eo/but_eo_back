@@ -104,7 +104,7 @@ public class ChattingService {
     }
 
     public void exitChatRoom(String chatRoomId, String userId) {
-        chattingMemberRepository.deleteChattingMember(chatRoomId, userId);
+        chattingMemberRepository.deleteChattingMember(userId, chatRoomId);
         log.warn("채팅방 나가기 쿼리문 실행(완)");
     }
 
