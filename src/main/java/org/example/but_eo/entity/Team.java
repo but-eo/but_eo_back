@@ -1,5 +1,6 @@
 package org.example.but_eo.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,8 +20,31 @@ public class Team {
     private String teamId;
 
     public enum Team_Type {
-        SOLO, TEAM
+        SOLO("개인"),
+        TEAM("팀");
+
+        private final String displayName;
+
+        Team_Type(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @JsonValue
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @JsonCreator
+        public static Team_Type from(String value) {
+            for (Team_Type t : Team_Type.values()) {
+                if (t.name().equalsIgnoreCase(value) || t.displayName.equals(value)) {
+                    return t;
+                }
+            }
+            throw new IllegalArgumentException("Invalid team_type: " + value);
+        }
     }
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -91,7 +115,7 @@ public class Team {
         TENNIS("테니스"),
         TABLE_TENNIS("탁구"),
         BADMINTON("배드민턴"),
-        VOLLEYBALL("배구"),
+        FUTSAL("풋살"),
         BOWLING("볼링");
 
         private final String displayName;

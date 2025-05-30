@@ -71,13 +71,15 @@ public class BoardService {
         return boards.stream().map(board -> new BoardResponse(
                 board.getBoardId(),
                 board.getTitle(),
-                board.getUser().getName(),
+                board.getUser().getUserHashId(),  // userHashId 먼저
+                board.getUser().getName(),        // userName 그 다음
                 board.getCategory(),
-                board.getEvent(), // 종목 포함
+                board.getEvent(),
                 board.getCommentCount(),
                 board.getLikeCount(),
                 board.getCreatedAt()
         )).toList();
+
     }
 
     // 상세 조회
@@ -98,6 +100,7 @@ public class BoardService {
                 .map(comment -> new CommentResponse(
                         comment.getCommentId(),
                         comment.getUser().getName(),
+                        comment.getUser().getUserHashId(),
                         comment.getContent(),
                         comment.getCreateAt(),
                         comment.getLikeCount()
