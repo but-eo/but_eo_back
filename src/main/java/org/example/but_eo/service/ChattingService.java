@@ -103,9 +103,9 @@ public class ChattingService {
         }
     }
 
-    public void exitChatRoom(String chatRoomId, String userId) {
+    public void exitChatRoom(String userId, String chatRoomId) {
         chattingMemberRepository.deleteChattingMember(userId, chatRoomId);
-        log.warn("채팅방 나가기 쿼리문 실행(완)");
+        log.warn("쿼리문 : DELETE FROM chatting_member WHERE user_hash_id = '" + userId + "' AND chat_id = '" + chatRoomId + "'");
     }
 
     public List<ChatMember> getChatMembers(String roomId) {
