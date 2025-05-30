@@ -73,6 +73,13 @@ public class TeamController {
         return ResponseEntity.ok(teams);
     }
 
+    // 팀 디테일조회
+    @GetMapping("/team/{teamId}")
+    public ResponseEntity<TeamResponse> getTeamDetail(@PathVariable String teamId) {
+        return ResponseEntity.ok(teamService.getTeamDetail(teamId));
+    }
+
+
     // 유저가 속한 팀에서의 역할 조회
     @GetMapping("/{teamId}/role")
     public ResponseEntity<String> getTeamRole(@PathVariable String teamId, Authentication authentication) {

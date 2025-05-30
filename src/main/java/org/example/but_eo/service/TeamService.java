@@ -164,6 +164,13 @@ public class TeamService {
                 .collect(Collectors.toList());
     }
 
+    // 팀 단일 조회
+    public TeamResponse getTeamDetail(String teamId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀이 존재하지 않습니다."));
+        return TeamResponse.from(team);
+    }
+
     // 내 역할 조회 (LEADER / MEMBER / NONE)
     public String getTeamRole(String teamId, String userId) {
         TeamMemberKey key = new TeamMemberKey(userId, teamId);
