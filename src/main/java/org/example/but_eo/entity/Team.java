@@ -1,5 +1,6 @@
 package org.example.but_eo.entity;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,9 +41,35 @@ public class Team {
     @Column(nullable = false)
     private int rating; // 팀 점수
 
-    public enum Team_Case{
-        TEENAGER, UNIVERSITY, OFFICE, CLUB, FEMALE, ETC
-    } //청소년, 대학생, 직장인, 동호회, 여성, 기타
+    public enum Team_Case {
+        TEENAGER("청소년"),
+        UNIVERSITY("대학생"),
+        OFFICE("직장인"),
+        CLUB("동호회"),
+        FEMALE("여성"),
+        ETC("기타");
+
+        private final String displayName;
+
+        Team_Case(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @com.fasterxml.jackson.annotation.JsonValue
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @com.fasterxml.jackson.annotation.JsonCreator
+        public static Team_Case from(String value) {
+            for (Team_Case t : Team_Case.values()) {
+                if (t.name().equalsIgnoreCase(value) || t.displayName.equals(value)) {
+                    return t;
+                }
+            }
+            throw new IllegalArgumentException("Invalid team_case: " + value);
+        }
+    }
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
@@ -57,8 +84,36 @@ public class Team {
     @Column(nullable = true)
     private int totalReview; //리뷰 총합점
 
-    public enum Event{
-        SOCCER, FUTSAL, BASEBALL, BASKETBALL, BADMINTON, TENNIS, TABLE_TENNIS, BOWLING
+    public enum Event {
+        SOCCER("축구"),
+        BASKETBALL("농구"),
+        BASEBALL("야구"),
+        TENNIS("테니스"),
+        TABLE_TENNIS("탁구"),
+        BADMINTON("배드민턴"),
+        VOLLEYBALL("배구"),
+        BOWLING("볼링");
+
+        private final String displayName;
+
+        Event(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @com.fasterxml.jackson.annotation.JsonValue
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @com.fasterxml.jackson.annotation.JsonCreator
+        public static Event from(String value) {
+            for (Event e : Event.values()) {
+                if (e.name().equalsIgnoreCase(value) || e.displayName.equals(value)) {
+                    return e;
+                }
+            }
+            throw new IllegalArgumentException("Invalid event: " + value);
+        }
     } //축구, 풋살, 야구, 농구, 배드민턴, 테니스, 탁구, 볼링
 
     @Enumerated(EnumType.STRING)

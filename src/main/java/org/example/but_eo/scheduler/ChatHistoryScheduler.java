@@ -2,7 +2,6 @@ package org.example.but_eo.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.but_eo.dto.ChatMessage;
 import org.example.but_eo.entity.ChattingMessage;
 import org.example.but_eo.repository.ChattingMessageRepository;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,20 +22,25 @@ public class ChatHistoryScheduler {
     @Scheduled(fixedRate = 5 * 60 * 1000) // 5분마다 실행
     public void flushRedisToDatabase() {
         Set<String> keys = redisTemplate.keys("chatroom:*");
-        if (keys == null) return;
+        if (keys.isEmpty()) return;
 
         for (String key : keys) {
-            List<Object> messages = redisTemplate.opsForList().range(key, 0, -1);
-            if (messages == null || messages.isEmpty()) continue;
+            try {
+                List<Object> messages = redisTemplate.opsForList().range(key, 0, -1);
+                if (messages == null || messages.isEmpty()) continue;
 
-            List<ChattingMessage> entities = messages.stream()
-                    .map(m -> ((ChattingMessage) m))
-                    .toList();
+                List<ChattingMessage> entities = messages.stream()
+                        .filter(m -> m instanceof ChattingMessage)
+                        .map(m -> (ChattingMessage) m)
+                        .toList();
 
-            chatMessageRepository.saveAll(entities);
-            redisTemplate.delete(key); // Redis 비우기
+                chatMessageRepository.saveAll(entities);
+                redisTemplate.delete(key);
 
-            log.info("✅ 저장 완료: {}건, 채널: {}", entities.size(), key);
+                log.info("✅ 저장 완료: {}건, 채널: {}", entities.size(), key);
+            } catch (Exception e) {
+                log.error("❌ 채팅 메시지 플러시 실패 - 키: {}", key, e);
+            }
         }
     }
 }
