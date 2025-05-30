@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class BoardResponse {
     private String boardId;
     private String title;
+    private String userHashId;
     private String userName;
     private Board.Category category;
     private Board.Event event; // 추가
