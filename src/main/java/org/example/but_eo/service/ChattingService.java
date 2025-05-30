@@ -118,4 +118,9 @@ public class ChattingService {
         }
         return memberList;
     }
+
+    public String getNickName(String userId) {
+        Users user = usersRepository.findByUserHashId(userId);
+        return user.getName();
+    }
 }

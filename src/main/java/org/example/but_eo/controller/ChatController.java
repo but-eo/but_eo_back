@@ -39,7 +39,6 @@ public class ChatController {
     private final ChattingMessageService chattingMessageService;
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
-    private String roomId;
 
     @MessageMapping("chat/enter") // 현재 세팅의 경우 클라이언트에서 보낼 때 /app/chat/message -> 클라이언트가 채팅을 보낼때 입장이나 등등
     public void enter(@Payload ChatMessage message) {
@@ -82,6 +81,7 @@ public class ChatController {
 
             message.setSender(userId);
             message.setMessageId(UUID.randomUUID().toString());
+            message.setNickName(chattingService.getNickName(userId));
             message.setCreatedAt(LocalDateTime.now().toString());
 
             redisChatService.saveMessageToRedis(message.getChat_id(), message);
@@ -97,7 +97,6 @@ public class ChatController {
     @GetMapping("/load/messages/{roomId}")
     @ResponseBody
     public List<ChatMessage> getMessages(@PathVariable String roomId) {
-        this.roomId = roomId;
         String key = "chatroom:" + roomId;
 
         //Flutter에서는 메세지를 Map으로 파싱하려고 함 -> 역직렬화 필요
@@ -107,7 +106,7 @@ public class ChatController {
 
         for(String json : rawMessages){
             try {
-                ChatMessage message = objectMapper.readValue(json, ChatMessage.class);
+                ChatMessage message = mapper.readValue(json, ChatMessage.class);
                 messages.add(message);
             }catch (JsonProcessingException e) {
                 e.printStackTrace();
@@ -120,7 +119,13 @@ public class ChatController {
     @GetMapping("/load/members/{roomId}")
     @ResponseBody
     public List<ChatMember> getMembers(@PathVariable String roomId) {
-        return chattingService.getChatMembers(roomId);
+        List<ChatMember> memberList = chattingService.getChatMembers(roomId);
+        if(memberList.isEmpty()){
+            log.warn("멤버 리스트가 비어있습니다");
+            return null;
+        }
+        log.warn("멤버 리스트 전송");
+        return memberList;
     }
 
 
@@ -157,8 +162,10 @@ public class ChatController {
 
     @PostMapping("/exit/ChatRoom/{roomId}")
     public ResponseEntity<Void> exitChatRoom(@PathVariable String roomId, Authentication authentication) {
+        log.warn("채팅방 나가기 시도");
         String userId = (String) authentication.getPrincipal();
         chattingService.exitChatRoom(roomId, userId);
+
         return ResponseEntity.noContent().build();
     }
 }
