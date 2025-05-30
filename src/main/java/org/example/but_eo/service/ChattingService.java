@@ -3,11 +3,9 @@ package org.example.but_eo.service;
 import lombok.RequiredArgsConstructor;
 import org.example.but_eo.dto.ChatMember;
 import org.example.but_eo.dto.ChattingDTO;
-import org.example.but_eo.dto.UserDto;
 import org.example.but_eo.entity.*;
 import org.example.but_eo.repository.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

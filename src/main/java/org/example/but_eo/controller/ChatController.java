@@ -76,7 +76,7 @@ public class ChatController {
     @MessageMapping("/chat/message")
     public void message(@Payload ChatMessage message, Principal principal) {
         if(principal!=null){
-            String userId = (String) principal.getName();
+            String userId = principal.getName();
             System.out.println(userId);
 
             message.setSender(userId);
@@ -101,12 +101,12 @@ public class ChatController {
 
         //Flutter에서는 메세지를 Map으로 파싱하려고 함 -> 역직렬화 필요
         List<String> rawMessages = redisTemplate.opsForList().range(key, 0, -1);
-        ObjectMapper mapper = new ObjectMapper(); //Jackson
+//        ObjectMapper mapper = new ObjectMapper();
         List<ChatMessage> messages = new ArrayList<>();
 
         for(String json : rawMessages){
             try {
-                ChatMessage message = mapper.readValue(json, ChatMessage.class);
+                ChatMessage message = objectMapper.readValue(json, ChatMessage.class); //Jackson
                 messages.add(message);
             }catch (JsonProcessingException e) {
                 e.printStackTrace();
