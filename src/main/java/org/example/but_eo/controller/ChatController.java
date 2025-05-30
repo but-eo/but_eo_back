@@ -86,7 +86,7 @@ public class ChatController {
 
             redisChatService.saveMessageToRedis(message.getChat_id(), message);
             messagingTemplate.convertAndSend("/all/chat/" + message.getChat_id(), message);
-            System.out.println("메세지가 전송된 채팅방 아이디 : " + message.getChat_id());
+            System.out.println("메세지 전송된 채팅방 아이디 : " + message.getChat_id());
             System.out.println("메세지 내용 : " + message.getMessage());
         }
         else{
@@ -164,7 +164,7 @@ public class ChatController {
         if(userId!=null){
             System.out.println("채팅방 : " + roomId + "나간 인원 : " + userId);
         }
-        chattingService.exitChatRoom(roomId, userId);
+        chattingService.exitChatRoom(userId, roomId);
         return ResponseEntity.noContent().build();
     }
 }
