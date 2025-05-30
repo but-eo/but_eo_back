@@ -26,7 +26,7 @@ public interface TeamInvitationRepository extends JpaRepository<TeamInvitation, 
             @Param("status") TeamInvitation.Status status
     );
 
-    // ✅ 유저가 보낸 가입 신청 중복 확인
+    // 유저가 보낸 가입 신청 중복 확인
     @Query("""
         SELECT COUNT(i) > 0
         FROM TeamInvitation i
@@ -47,6 +47,13 @@ public interface TeamInvitationRepository extends JpaRepository<TeamInvitation, 
             String teamId,
             TeamInvitation.Direction direction,
             TeamInvitation.Status status
+    );
+
+    // 팀 리더가 유저들의 가입 신청 목록 조회 (PENDING + REQUEST)
+    List<TeamInvitation> findAllByTeam_TeamIdAndStatusAndDirection(
+            String teamId,
+            TeamInvitation.Status status,
+            TeamInvitation.Direction direction
     );
 
     List<TeamInvitation> findByUser_UserHashIdAndStatus(String userId, TeamInvitation.Status status);
