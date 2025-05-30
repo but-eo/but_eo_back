@@ -227,7 +227,7 @@ public class TeamService {
                 .map(inv -> TeamJoinRequestDto.builder()
                         .userId(inv.getUser().getUserHashId())
                         .userName(inv.getUser().getName())
-                        .profileImg(inv.getUser().getProfileImg())
+                        .profileImg(inv.getUser().getProfile())
                         .requestedAt(inv.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
