@@ -3,6 +3,9 @@ package org.example.but_eo.dto;
 import lombok.Builder;
 import lombok.Getter;
 import org.example.but_eo.entity.Team;
+import org.example.but_eo.entity.Team.Event;
+import org.example.but_eo.entity.Team.Team_Case;
+import org.example.but_eo.entity.Team.Team_Type;
 
 import java.util.List;
 
@@ -16,9 +19,9 @@ public class TeamResponse {
     private int rating;
     private String teamDescription;
     private String teamImg;
-    private String event;
-    private String teamType;
-    private String teamCase;
+    private Event event;
+    private Team_Type teamType;
+    private Team_Case teamCase;
 
     private int totalMembers;
     private int matchCount;
@@ -39,9 +42,9 @@ public class TeamResponse {
                 .rating(team.getRating())
                 .teamDescription(team.getTeamDescription())
                 .teamImg(team.getTeamImg())
-                .event(team.getEvent().name())
-                .teamType(team.getTeamType().name())
-                .teamCase(team.getTeamCase() != null ? team.getTeamCase().name() : null)
+                .event(team.getEvent())
+                .teamType(team.getTeamType())
+                .teamCase(team.getTeamCase())
 
                 .totalMembers(team.getTotalMembers())
                 .matchCount(team.getMatchCount())

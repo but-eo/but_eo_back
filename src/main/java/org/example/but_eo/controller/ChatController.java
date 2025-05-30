@@ -119,13 +119,11 @@ public class ChatController {
     @GetMapping("/load/members/{roomId}")
     @ResponseBody
     public List<ChatMember> getMembers(@PathVariable String roomId) {
-        List<ChatMember> memberList = chattingService.getChatMembers(roomId);
-        if(memberList.isEmpty()){
-            log.warn("멤버 리스트가 비어있습니다");
-            return null;
+        List<ChatMember> members = chattingService.getChatMembers(roomId);
+        if(members!=null) {
+            System.out.println("채팅방 소속 인원 : " + members);
         }
-        log.warn("멤버 리스트 전송");
-        return memberList;
+        return chattingService.getChatMembers(roomId);
     }
 
 
@@ -162,10 +160,11 @@ public class ChatController {
 
     @PostMapping("/exit/ChatRoom/{roomId}")
     public ResponseEntity<Void> exitChatRoom(@PathVariable String roomId, Authentication authentication) {
-        log.warn("채팅방 나가기 시도");
         String userId = (String) authentication.getPrincipal();
+        if(userId!=null){
+            System.out.println("채팅방 : " + roomId + "나간 인원 : " + userId);
+        }
         chattingService.exitChatRoom(roomId, userId);
-
         return ResponseEntity.noContent().build();
     }
 }
