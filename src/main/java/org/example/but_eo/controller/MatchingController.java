@@ -29,12 +29,21 @@ public class MatchingController {
 
     @GetMapping
     public ResponseEntity<Page<MatchingListResponse>> getMatchings(
-            @RequestParam(required = false) Matching.Match_Type matchType,
+            @RequestParam(required = false) String matchType,
             @RequestParam(required = false) String region,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Page<MatchingListResponse> result = matchingService.getMatchings(matchType, region, page, size);
+        Matching.Match_Type parsedType = null;
+        if (matchType != null && !matchType.isBlank()) {
+            try {
+                parsedType = Matching.Match_Type.from(matchType);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(null);
+            }
+        }
+
+        Page<MatchingListResponse> result = matchingService.getMatchings(parsedType, region, page, size);
         return ResponseEntity.ok(result);
     }
 

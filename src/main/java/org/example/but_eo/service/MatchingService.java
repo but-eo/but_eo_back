@@ -100,7 +100,7 @@ public class MatchingService {
         return matchingPage.map(m -> new MatchingListResponse(
                 m.getMatchId(),
                 m.getTeam().getTeamName(),
-                m.getTeam().getRegion(),
+                m.getRegion(),
                 m.getStadium() != null ? m.getStadium().getStadiumName() : "미정",
                 m.getMatchDate(),
                 m.getMatchType().getDisplayName(),
@@ -115,7 +115,7 @@ public class MatchingService {
         return new MatchingDetailResponse(
                 matching.getMatchId(),
                 matching.getTeam().getTeamName(),
-                matching.getTeam().getRegion(),
+                matching.getRegion(),
                 matching.getStadium() != null ? matching.getStadium().getStadiumName() : "미정",
                 matching.getStadium() != null ? matching.getStadium().getStadiumRegion() : "미정",
                 matching.getMatchDate(),
