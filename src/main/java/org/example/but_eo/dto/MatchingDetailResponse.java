@@ -20,7 +20,7 @@ public class MatchingDetailResponse {
     private String stadiumRegion;
     private LocalDateTime matchDate;
     private Boolean loan;
-    private Matching.Match_Type matchType;
+    private String matchType;
     private String etc;
     private String challengerTeamName;
     private Integer winnerScore;

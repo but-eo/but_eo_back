@@ -70,7 +70,7 @@ public class MatchingService {
 
         // 종목 파싱
         try {
-            matching.setMatchType(Matching.Match_Type.valueOf(request.getMatchType().toUpperCase()));
+            matching.setMatchType(Matching.Match_Type.from(request.getMatchType()));
         } catch (Exception e) {
             throw new RuntimeException("매치 타입이 잘못되었습니다.");
         }
@@ -103,7 +103,7 @@ public class MatchingService {
                 m.getTeam().getRegion(),
                 m.getStadium() != null ? m.getStadium().getStadiumName() : "미정",
                 m.getMatchDate(),
-                m.getMatchType(),
+                m.getMatchType().getDisplayName(),
                 m.getLoan()
         ));
     }
@@ -120,7 +120,7 @@ public class MatchingService {
                 matching.getStadium() != null ? matching.getStadium().getStadiumRegion() : "미정",
                 matching.getMatchDate(),
                 matching.getLoan(),
-                matching.getMatchType(),
+                matching.getMatchType().getDisplayName(),
                 matching.getEtc(),
                 matching.getChallengerTeam() != null ? matching.getChallengerTeam().getTeamName() : null,
                 matching.getWinnerScore(),
