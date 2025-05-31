@@ -18,7 +18,7 @@ public class MatchingListResponse {
     private String region;
     private String stadiumName;
     private LocalDateTime matchDate;
-    private Matching.Match_Type matchType;
+    private String matchType;
     private Boolean loan;
 }
 
