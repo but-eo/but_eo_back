@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class MatchingDetailResponse {
     private String matchId;
     private String teamName;
-    private String teamRegion;
+    private String region;
     private String stadiumName;
     private String stadiumRegion;
     private LocalDateTime matchDate;
