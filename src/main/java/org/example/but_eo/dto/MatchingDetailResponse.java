@@ -17,6 +17,8 @@ public class MatchingDetailResponse {
     private String matchRegion;
     private String teamName;
     private String teamRegion;
+    private String teamImg;
+    private int teamRating;
     private String stadiumName;
     private String stadiumRegion;
     private LocalDateTime matchDate;
