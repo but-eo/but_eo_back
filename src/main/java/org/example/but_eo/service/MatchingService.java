@@ -38,7 +38,9 @@ public class MatchingService {
         Matching matching = new Matching();
         matching.setMatchId(UUID.randomUUID().toString());
         matching.setTeam(team);
-        matching.setRegion(request.getRegion());
+        matching.setMatchRegion(request.getRegion()); // 매치 등록 시 입력한 지역
+        matching.setTeamRegion(team.getRegion());     // 팀 지역
+        matching.setStadiumRegion(null);              // 스타디움은 없으므로 null
         matching.setEtc(request.getEtc());
         matching.setState(Matching.State.WAITING);
 
@@ -85,13 +87,13 @@ public class MatchingService {
         Page<Matching> matchingPage;
 
         if (matchType != null && region != null) {
-            matchingPage = matchingRepository.findByMatchTypeAndStadium_StadiumRegionAndState(
+            matchingPage = matchingRepository.findByMatchTypeAndMatchRegionAndState(
                     matchType, region, Matching.State.WAITING, pageable);
         } else if (matchType != null) {
             matchingPage = matchingRepository.findByMatchTypeAndState(
                     matchType, Matching.State.WAITING, pageable);
         } else if (region != null) {
-            matchingPage = matchingRepository.findByRegionAndState(
+            matchingPage = matchingRepository.findByMatchRegionAndState(
                     region, Matching.State.WAITING, pageable);
         } else {
             matchingPage = matchingRepository.findByState(Matching.State.WAITING, pageable);
@@ -99,9 +101,10 @@ public class MatchingService {
 
         return matchingPage.map(m -> new MatchingListResponse(
                 m.getMatchId(),
+                m.getMatchRegion(),
                 m.getTeam().getTeamName(),
-                m.getRegion(),
                 m.getStadium() != null ? m.getStadium().getStadiumName() : "미정",
+                m.getStadiumRegion() != null ? m.getStadiumRegion() : "미정",
                 m.getMatchDate(),
                 m.getMatchType().getDisplayName(),
                 m.getLoan()
@@ -114,10 +117,11 @@ public class MatchingService {
 
         return new MatchingDetailResponse(
                 matching.getMatchId(),
+                matching.getMatchRegion(),
                 matching.getTeam().getTeamName(),
-                matching.getRegion(),
+                matching.getTeamRegion(),
                 matching.getStadium() != null ? matching.getStadium().getStadiumName() : "미정",
-                matching.getStadium() != null ? matching.getStadium().getStadiumRegion() : "미정",
+                matching.getStadiumRegion() != null ? matching.getStadiumRegion() : "미정",
                 matching.getMatchDate(),
                 matching.getLoan(),
                 matching.getMatchType().getDisplayName(),
