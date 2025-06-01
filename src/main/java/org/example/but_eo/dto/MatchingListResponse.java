@@ -17,6 +17,7 @@ public class MatchingListResponse {
     private String matchRegion;
     private String teamName;
     private String teamImg;
+    private String teamRegion;
     private int teamRating;
     private String stadiumName;
     private String stadiumRegion;
