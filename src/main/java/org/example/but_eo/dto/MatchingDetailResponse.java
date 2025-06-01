@@ -20,7 +20,6 @@ public class MatchingDetailResponse {
     private String teamImg;
     private int teamRating;
     private String stadiumName;
-    private String stadiumRegion;
     private LocalDateTime matchDate;
     private Boolean loan;
     private String matchType;

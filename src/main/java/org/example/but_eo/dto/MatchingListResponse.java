@@ -20,7 +20,6 @@ public class MatchingListResponse {
     private String teamRegion;
     private int teamRating;
     private String stadiumName;
-    private String stadiumRegion;
     private LocalDateTime matchDate;
     private String matchType;
     private Boolean loan;

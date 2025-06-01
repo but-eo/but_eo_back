@@ -40,7 +40,6 @@ public class MatchingService {
         matching.setTeam(team);
         matching.setMatchRegion(request.getRegion()); // 매치 등록 시 입력한 지역
         matching.setTeamRegion(team.getRegion());     // 팀 지역
-        matching.setStadiumRegion(null);              // 스타디움은 없으므로 null
         matching.setEtc(request.getEtc());
         matching.setState(Matching.State.WAITING);
 
@@ -101,13 +100,12 @@ public class MatchingService {
 
         return matchingPage.map(m -> new MatchingListResponse(
                 m.getMatchId(),
-                m.getMatchRegion(),
+                m.getMatchRegion() != null ? m.getMatchRegion() : "미정",
                 m.getTeam().getTeamName(),
                 m.getTeam().getTeamImg(),
                 m.getTeam().getRegion(),
                 m.getTeam().getRating(),
                 m.getStadium() != null ? m.getStadium().getStadiumName() : "미정",
-                m.getStadiumRegion() != null ? m.getStadiumRegion() : "미정",
                 m.getMatchDate(),
                 m.getMatchType().getDisplayName(),
                 m.getLoan()
@@ -120,13 +118,12 @@ public class MatchingService {
 
         return new MatchingDetailResponse(
                 matching.getMatchId(),
-                matching.getMatchRegion(),
+                matching.getMatchRegion() != null ? matching.getMatchRegion() : "미정",
                 matching.getTeam().getTeamName(),
                 matching.getTeam().getTeamImg(),
                 matching.getTeamRegion(),
                 matching.getTeam().getRating(),
                 matching.getStadium() != null ? matching.getStadium().getStadiumName() : "미정",
-                matching.getStadiumRegion() != null ? matching.getStadiumRegion() : "미정",
                 matching.getMatchDate(),
                 matching.getLoan(),
                 matching.getMatchType().getDisplayName(),
