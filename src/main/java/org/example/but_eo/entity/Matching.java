@@ -53,7 +53,13 @@ public class Matching {
     private LocalDateTime matchDate;
 
     @Column(length = 30, nullable = true)
-    private String region;
+    private String matchRegion;
+
+    @Column(length = 30, nullable = true)
+    private String teamRegion;
+
+    @Column(length = 30, nullable = true)
+    private String stadiumRegion;
 
     public enum Match_Type {
         SOCCER("축구"),

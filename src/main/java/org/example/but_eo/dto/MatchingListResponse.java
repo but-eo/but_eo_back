@@ -14,9 +14,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MatchingListResponse {
     private String matchId;
+    private String matchRegion;
     private String teamName;
-    private String region;
     private String stadiumName;
+    private String stadiumRegion;
     private LocalDateTime matchDate;
     private String matchType;
     private Boolean loan;
