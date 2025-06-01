@@ -58,9 +58,6 @@ public class Matching {
     @Column(length = 30, nullable = true)
     private String teamRegion;
 
-    @Column(length = 30, nullable = true)
-    private String stadiumRegion;
-
     public enum Match_Type {
         SOCCER("축구"),
         FUTSAL("풋살"),
