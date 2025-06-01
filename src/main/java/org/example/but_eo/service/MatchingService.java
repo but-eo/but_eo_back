@@ -104,6 +104,7 @@ public class MatchingService {
                 m.getMatchRegion(),
                 m.getTeam().getTeamName(),
                 m.getTeam().getTeamImg(),
+                m.getTeam().getRegion(),
                 m.getTeam().getRating(),
                 m.getStadium() != null ? m.getStadium().getStadiumName() : "미정",
                 m.getStadiumRegion() != null ? m.getStadiumRegion() : "미정",
