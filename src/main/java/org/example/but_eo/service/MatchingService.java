@@ -30,16 +30,27 @@ public class MatchingService {
 
     @Transactional
     public void createMatch(MatchCreateRequest request, String userId) {
-        TeamMember leader = teamMemberRepository.findByUser_UserHashIdAndType(userId, TeamMember.Type.LEADER)
-                .orElseThrow(() -> new RuntimeException("리더 팀이 없습니다."));
+        // matchType → Team.Event 변환
+        Team.Event event;
+        try {
+            event = Team.Event.valueOf(request.getMatchType());
+        } catch (Exception e) {
+            throw new RuntimeException("매치 타입이 잘못되었습니다.");
+        }
+
+        // 종목 기반 리더 조회
+        TeamMember leader = teamMemberRepository
+                .findByUser_UserHashIdAndTypeAndTeam_Event(userId, TeamMember.Type.LEADER, event)
+                .orElseThrow(() -> new RuntimeException("해당 종목에서 리더인 팀이 없습니다."));
 
         Team team = leader.getTeam();
 
+        // 매치 생성
         Matching matching = new Matching();
         matching.setMatchId(UUID.randomUUID().toString());
         matching.setTeam(team);
-        matching.setMatchRegion(request.getRegion()); // 매치 등록 시 입력한 지역
-        matching.setTeamRegion(team.getRegion());     // 팀 지역
+        matching.setMatchRegion(request.getRegion());
+        matching.setTeamRegion(team.getRegion());
         matching.setEtc(request.getEtc());
         matching.setState(Matching.State.WAITING);
 
