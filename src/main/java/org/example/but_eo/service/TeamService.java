@@ -2,6 +2,7 @@ package org.example.but_eo.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.but_eo.dto.TeamJoinRequestDto;
 import org.example.but_eo.dto.TeamResponse;
 import org.example.but_eo.dto.UpdateTeamRequest;
 import org.example.but_eo.entity.*;
@@ -164,6 +165,14 @@ public class TeamService {
                 .collect(Collectors.toList());
     }
 
+    // 팀 단일 조회
+    public TeamResponse getTeamDetail(String teamId) {
+        Team team = teamRepository.findWithMembersByTeamId(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀이 존재하지 않습니다."));
+        return TeamResponse.from(team);
+    }
+
+
     // 내 역할 조회 (LEADER / MEMBER / NONE)
     public String getTeamRole(String teamId, String userId) {
         TeamMemberKey key = new TeamMemberKey(userId, teamId);
@@ -194,4 +203,35 @@ public class TeamService {
             throw new RuntimeException("파일 저장 실패", e);
         }
     }
+
+    //
+    public List<TeamJoinRequestDto> getJoinRequests(String teamId, String leaderId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀이 존재하지 않습니다."));
+
+        TeamMemberKey key = new TeamMemberKey(leaderId, teamId);
+        TeamMember member = teamMemberRepository.findById(key)
+                .orElseThrow(() -> new IllegalStateException("팀에 속해있지 않습니다."));
+
+        if (member.getType() != TeamMember.Type.LEADER) {
+            throw new IllegalAccessError("리더만 조회할 수 있습니다.");
+        }
+
+        List<TeamInvitation> requests = teamInvitationRepository
+                .findAllByTeam_TeamIdAndStatusAndDirection(
+                        teamId,
+                        TeamInvitation.Status.PENDING,
+                        TeamInvitation.Direction.REQUEST
+                );
+
+        return requests.stream()
+                .map(inv -> TeamJoinRequestDto.builder()
+                        .userId(inv.getUser().getUserHashId())
+                        .userName(inv.getUser().getName())
+                        .profileImg(inv.getUser().getProfile())
+                        .requestedAt(inv.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
 }

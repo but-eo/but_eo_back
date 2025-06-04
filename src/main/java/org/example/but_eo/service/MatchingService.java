@@ -30,15 +30,27 @@ public class MatchingService {
 
     @Transactional
     public void createMatch(MatchCreateRequest request, String userId) {
-        TeamMember leader = teamMemberRepository.findByUser_UserHashIdAndType(userId, TeamMember.Type.LEADER)
-                .orElseThrow(() -> new RuntimeException("리더 팀이 없습니다."));
+        // matchType → Team.Event 변환
+        Team.Event event;
+        try {
+            event = Team.Event.valueOf(request.getMatchType());
+        } catch (Exception e) {
+            throw new RuntimeException("매치 타입이 잘못되었습니다.");
+        }
+
+        // 종목 기반 리더 조회
+        TeamMember leader = teamMemberRepository
+                .findByUser_UserHashIdAndTypeAndTeam_Event(userId, TeamMember.Type.LEADER, event)
+                .orElseThrow(() -> new RuntimeException("해당 종목에서 리더인 팀이 없습니다."));
 
         Team team = leader.getTeam();
 
+        // 매치 생성
         Matching matching = new Matching();
         matching.setMatchId(UUID.randomUUID().toString());
         matching.setTeam(team);
-        matching.setRegion(request.getRegion());
+        matching.setMatchRegion(request.getRegion());
+        matching.setTeamRegion(team.getRegion());
         matching.setEtc(request.getEtc());
         matching.setState(Matching.State.WAITING);
 
@@ -70,7 +82,7 @@ public class MatchingService {
 
         // 종목 파싱
         try {
-            matching.setMatchType(Matching.Match_Type.valueOf(request.getMatchType().toUpperCase()));
+            matching.setMatchType(Matching.Match_Type.from(request.getMatchType()));
         } catch (Exception e) {
             throw new RuntimeException("매치 타입이 잘못되었습니다.");
         }
@@ -85,13 +97,13 @@ public class MatchingService {
         Page<Matching> matchingPage;
 
         if (matchType != null && region != null) {
-            matchingPage = matchingRepository.findByMatchTypeAndStadium_StadiumRegionAndState(
+            matchingPage = matchingRepository.findByMatchTypeAndMatchRegionAndState(
                     matchType, region, Matching.State.WAITING, pageable);
         } else if (matchType != null) {
             matchingPage = matchingRepository.findByMatchTypeAndState(
                     matchType, Matching.State.WAITING, pageable);
         } else if (region != null) {
-            matchingPage = matchingRepository.findByRegionAndState(
+            matchingPage = matchingRepository.findByMatchRegionAndState(
                     region, Matching.State.WAITING, pageable);
         } else {
             matchingPage = matchingRepository.findByState(Matching.State.WAITING, pageable);
@@ -99,11 +111,14 @@ public class MatchingService {
 
         return matchingPage.map(m -> new MatchingListResponse(
                 m.getMatchId(),
+                m.getMatchRegion() != null ? m.getMatchRegion() : "미정",
                 m.getTeam().getTeamName(),
+                m.getTeam().getTeamImg(),
                 m.getTeam().getRegion(),
+                m.getTeam().getRating(),
                 m.getStadium() != null ? m.getStadium().getStadiumName() : "미정",
                 m.getMatchDate(),
-                m.getMatchType(),
+                m.getMatchType().getDisplayName(),
                 m.getLoan()
         ));
     }
@@ -114,13 +129,15 @@ public class MatchingService {
 
         return new MatchingDetailResponse(
                 matching.getMatchId(),
+                matching.getMatchRegion() != null ? matching.getMatchRegion() : "미정",
                 matching.getTeam().getTeamName(),
-                matching.getTeam().getRegion(),
+                matching.getTeam().getTeamImg(),
+                matching.getTeamRegion(),
+                matching.getTeam().getRating(),
                 matching.getStadium() != null ? matching.getStadium().getStadiumName() : "미정",
-                matching.getStadium() != null ? matching.getStadium().getStadiumRegion() : "미정",
                 matching.getMatchDate(),
                 matching.getLoan(),
-                matching.getMatchType(),
+                matching.getMatchType().getDisplayName(),
                 matching.getEtc(),
                 matching.getChallengerTeam() != null ? matching.getChallengerTeam().getTeamName() : null,
                 matching.getWinnerScore(),

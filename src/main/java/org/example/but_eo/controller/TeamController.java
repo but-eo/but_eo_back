@@ -1,6 +1,7 @@
 package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.but_eo.dto.TeamJoinRequestDto;
 import org.example.but_eo.dto.TeamResponse;
 import org.example.but_eo.dto.UpdateTeamRequest;
 import org.example.but_eo.entity.Team;
@@ -73,6 +74,13 @@ public class TeamController {
         return ResponseEntity.ok(teams);
     }
 
+    // 팀 디테일조회
+    @GetMapping("/team/{teamId}")
+    public ResponseEntity<TeamResponse> getTeamDetail(@PathVariable String teamId) {
+        return ResponseEntity.ok(teamService.getTeamDetail(teamId));
+    }
+
+
     // 유저가 속한 팀에서의 역할 조회
     @GetMapping("/{teamId}/role")
     public ResponseEntity<String> getTeamRole(@PathVariable String teamId, Authentication authentication) {
@@ -87,5 +95,14 @@ public class TeamController {
         String userId = (String) authentication.getPrincipal();
         List<TeamResponse> teams = teamService.getTeamsWhereUserIsLeader(userId);
         return ResponseEntity.ok(teams);
+    }
+
+    // 팀 신청 조회
+    @GetMapping("/team/{teamId}/requests")
+    public ResponseEntity<List<TeamJoinRequestDto>> getJoinRequests(
+            @PathVariable String teamId,
+            @RequestParam String leaderId
+    ) {
+        return ResponseEntity.ok(teamService.getJoinRequests(teamId, leaderId));
     }
 }

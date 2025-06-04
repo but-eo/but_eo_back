@@ -14,11 +14,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MatchingListResponse {
     private String matchId;
+    private String matchRegion;
     private String teamName;
-    private String region;
+    private String teamImg;
+    private String teamRegion;
+    private int teamRating;
     private String stadiumName;
     private LocalDateTime matchDate;
-    private Matching.Match_Type matchType;
+    private String matchType;
     private Boolean loan;
 }
 

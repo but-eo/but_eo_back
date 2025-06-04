@@ -25,10 +25,14 @@ public interface MatchingRepository extends JpaRepository<Matching, String> {
     Page<Matching> findByMatchTypeAndStadium_StadiumRegionAndState(Matching.Match_Type matchType, String region, Matching.State state, Pageable pageable);
     Page<Matching> findByMatchTypeAndState(Matching.Match_Type matchType, Matching.State state, Pageable pageable);
 
-    Page<Matching> findByRegionAndState(String region, Matching.State state, Pageable pageable);
+    Page<Matching> findByMatchRegionAndState(String matchRegion, Matching.State state, Pageable pageable);
 
+    Page<Matching> findByMatchTypeAndMatchRegionAndState(Matching.Match_Type matchType, String matchRegion, Matching.State state, Pageable pageable);
+
+    // 기본 상태 필터
     Page<Matching> findByState(Matching.State state, Pageable pageable);
 
+    // 매치 중복 등록 방지
     boolean existsByTeam_TeamIdAndMatchDate(String teamId, LocalDateTime matchDate);
 
 
