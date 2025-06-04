@@ -43,6 +43,10 @@ public class TeamService {
                            int memberAge, Team.Team_Case teamCase, String teamDescription,
                            MultipartFile teamImg, String userId) {
 
+        if (teamRepository.existsByTeamName(teamName)) {
+            throw new IllegalStateException("이미 존재하는 팀 이름입니다.");
+        }
+
         if (teamMemberRepository.existsByUserAndEvent(userId, event)) {
             throw new IllegalStateException("이미 해당 종목의 팀에 소속되어 있습니다.");
         }
