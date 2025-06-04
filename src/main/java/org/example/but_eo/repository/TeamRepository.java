@@ -19,4 +19,5 @@ public interface TeamRepository extends JpaRepository<Team, String> {
 """)
     Optional<Team> findWithMembersByTeamId(@Param("teamId") String teamId);
 
+    boolean existsByTeamName(String teamName);
 }

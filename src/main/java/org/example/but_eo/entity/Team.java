@@ -53,7 +53,7 @@ public class Team {
     @Column(nullable = true)
     private String teamImg; //팀 프로필 사진
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 20, nullable = false, unique = true)
     private String teamName;
 
     @Column(length = 30, nullable = false)
