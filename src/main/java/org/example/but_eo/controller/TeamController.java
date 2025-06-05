@@ -76,8 +76,12 @@ public class TeamController {
 
     // 팀 디테일조회
     @GetMapping("/team/{teamId}")
-    public ResponseEntity<TeamResponse> getTeamDetail(@PathVariable String teamId) {
-        return ResponseEntity.ok(teamService.getTeamDetail(teamId));
+    public ResponseEntity<TeamResponse> getTeamDetail(
+            @PathVariable String teamId,
+            Authentication authentication
+    ) {
+        String userId = (String) authentication.getPrincipal();
+        return ResponseEntity.ok(teamService.getTeamDetail(teamId, userId));
     }
 
 
@@ -101,8 +105,10 @@ public class TeamController {
     @GetMapping("/team/{teamId}/requests")
     public ResponseEntity<List<TeamJoinRequestDto>> getJoinRequests(
             @PathVariable String teamId,
-            @RequestParam String leaderId
+            Authentication authentication
     ) {
+        String leaderId = (String) authentication.getPrincipal();
         return ResponseEntity.ok(teamService.getJoinRequests(teamId, leaderId));
     }
+
 }
