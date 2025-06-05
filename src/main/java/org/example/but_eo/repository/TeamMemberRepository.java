@@ -22,7 +22,9 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, TeamMemb
         AND tm.team.event = :event
     """)
 
-    boolean existsByUserAndEvent(@Param("userId") String userId, @Param("event") Team.Event event);
+    boolean existsByUser_UserHashIdAndTeam_TeamId(String userId, String teamId);
+
+    boolean existsByUser_UserHashIdAndTeam_Event(String userId, Team.Event event);
 
     void deleteAllByUser(Users user);
 

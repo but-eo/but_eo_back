@@ -45,7 +45,6 @@ public class Team {
         }
     }
 
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Team_Type teamType;

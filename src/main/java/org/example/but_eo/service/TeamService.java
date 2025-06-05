@@ -47,7 +47,7 @@ public class TeamService {
             throw new IllegalStateException("이미 존재하는 팀 이름입니다.");
         }
 
-        if (teamMemberRepository.existsByUserAndEvent(userId, event)) {
+        if (teamMemberRepository.existsByUser_UserHashIdAndTeam_Event(userId, event)) {
             throw new IllegalStateException("이미 해당 종목의 팀에 소속되어 있습니다.");
         }
 
@@ -170,11 +170,24 @@ public class TeamService {
     }
 
     // 팀 단일 조회
-    public TeamResponse getTeamDetail(String teamId) {
+    public TeamResponse getTeamDetail(String teamId, String userId) {
         Team team = teamRepository.findWithMembersByTeamId(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀이 존재하지 않습니다."));
-        return TeamResponse.from(team);
+        TeamResponse response = TeamResponse.from(team);
+
+        // 1. 팀 멤버인지
+        boolean isMember = teamMemberRepository.existsByUser_UserHashIdAndTeam_TeamId(userId, teamId);
+        if (isMember) {
+            response.setMyJoinStatus("MEMBER");
+        } else if (teamInvitationRepository.existsByUser_UserHashIdAndTeam_TeamIdAndStatusAndDirection(
+                userId, teamId, TeamInvitation.Status.PENDING, TeamInvitation.Direction.REQUEST)) {
+            response.setMyJoinStatus("PENDING");
+        } else {
+            response.setMyJoinStatus("NONE");
+        }
+        return response;
     }
+
 
 
     // 내 역할 조회 (LEADER / MEMBER / NONE)
