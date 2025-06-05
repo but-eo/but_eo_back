@@ -18,5 +18,5 @@ public class CommentResponse {
     private String content;
     private LocalDateTime createdAt;
     private int likeCount;
+    private String profileImg;
 }
-
