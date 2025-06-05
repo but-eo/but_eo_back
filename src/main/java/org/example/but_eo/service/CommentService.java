@@ -56,7 +56,8 @@ public class CommentService {
                 comment.getUser().getUserHashId(),
                 comment.getContent(),
                 comment.getCreatedAt(),
-                comment.getLikeCount()
+                comment.getLikeCount(),
+                comment.getUser().getProfile()
         )).toList();
     }
 
