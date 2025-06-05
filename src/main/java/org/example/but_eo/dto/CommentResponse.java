@@ -16,7 +16,7 @@ public class CommentResponse {
     private String userHashId;
     private String userName;
     private String content;
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
     private int likeCount;
 }
 
