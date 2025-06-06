@@ -154,12 +154,14 @@ public class TeamService {
 
         teamInvitationRepository.deleteAllByTeam(team);
         teamMemberRepository.deleteAll(team.getTeamMemberList());
-        teamRepository.delete(team);
+
+        team.setState(Team.State.DELETED);
+        teamRepository.save(team);
     }
 
     // 팀 목록 조회 (필터 적용)
     public List<TeamResponse> getFilteredTeams(String event, String region, String teamType, String teamCase, String teamName) {
-        return teamRepository.findAll().stream()
+        return teamRepository.findAllByState(Team.State.ACTIVE).stream()
                 .filter(team -> event == null || team.getEvent().name().equalsIgnoreCase(event))
                 .filter(team -> region == null || team.getRegion().contains(region))
                 .filter(team -> teamType == null || team.getTeamType().name().equalsIgnoreCase(teamType))
@@ -171,8 +173,8 @@ public class TeamService {
 
     // 팀 단일 조회
     public TeamResponse getTeamDetail(String teamId, String userId) {
-        Team team = teamRepository.findWithMembersByTeamId(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("팀이 존재하지 않습니다."));
+        Team team = teamRepository.findWithMembersByTeamIdAndState(teamId, Team.State.ACTIVE)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 삭제된 팀입니다."));
         TeamResponse response = TeamResponse.from(team);
 
         // 1. 팀 멤버인지
@@ -187,8 +189,6 @@ public class TeamService {
         }
         return response;
     }
-
-
 
     // 내 역할 조회 (LEADER / MEMBER / NONE)
     public String getTeamRole(String teamId, String userId) {
