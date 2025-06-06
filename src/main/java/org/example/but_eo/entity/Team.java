@@ -139,6 +139,14 @@ public class Team {
         }
     } //축구, 풋살, 야구, 농구, 배드민턴, 테니스, 탁구, 볼링
 
+    public enum State{
+        ACTIVE, DELETED
+    };
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private State state = State.ACTIVE;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Event event;

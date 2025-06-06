@@ -20,4 +20,10 @@ public interface TeamRepository extends JpaRepository<Team, String> {
     Optional<Team> findWithMembersByTeamId(@Param("teamId") String teamId);
 
     boolean existsByTeamName(String teamName);
+
+    // 목록 전체 ACTIVE만 조회
+    List<Team> findAllByState(Team.State state);
+
+    // 단일 조회 ACTIVE만
+    Optional<Team> findWithMembersByTeamIdAndState(String teamId, Team.State state);
 }

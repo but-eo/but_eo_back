@@ -15,12 +15,12 @@ import java.util.Optional;
 @Repository
 public interface TeamMemberRepository extends JpaRepository<TeamMember, TeamMemberKey> {
 
-    @Query("""
+    /*@Query("""
         SELECT COUNT(tm) > 0
         FROM TeamMember tm
         WHERE tm.user.userHashId = :userId
         AND tm.team.event = :event
-    """)
+    """)*/
 
     boolean existsByUser_UserHashIdAndTeam_TeamId(String userId, String teamId);
 

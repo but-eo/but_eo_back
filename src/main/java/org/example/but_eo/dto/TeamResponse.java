@@ -58,7 +58,7 @@ public class TeamResponse {
                 .teamType(team.getTeamType())
                 .teamCase(team.getTeamCase())
 
-                .totalMembers(team.getTotalMembers())
+                .totalMembers(team.getTeamMemberList() != null ? team.getTeamMemberList().size() : 0)
                 .matchCount(team.getMatchCount())
                 .winCount(team.getWinCount())
                 .loseCount(team.getLoseCount())
