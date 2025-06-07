@@ -45,7 +45,6 @@ public class Team {
         }
     }
 
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Team_Type teamType;
@@ -53,7 +52,7 @@ public class Team {
     @Column(nullable = true)
     private String teamImg; //팀 프로필 사진
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 20, nullable = false, unique = true)
     private String teamName;
 
     @Column(length = 30, nullable = false)
@@ -139,6 +138,14 @@ public class Team {
             throw new IllegalArgumentException("Invalid event: " + value);
         }
     } //축구, 풋살, 야구, 농구, 배드민턴, 테니스, 탁구, 볼링
+
+    public enum State{
+        ACTIVE, DELETED
+    };
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private State state = State.ACTIVE;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

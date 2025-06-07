@@ -62,6 +62,10 @@ public interface TeamInvitationRepository extends JpaRepository<TeamInvitation, 
 
     boolean existsByUser_UserHashIdAndTeam_TeamId(String userId, String teamId);
 
+    boolean existsByUser_UserHashIdAndTeam_TeamIdAndStatusAndDirection(
+            String userId, String teamId, TeamInvitation.Status status, TeamInvitation.Direction direction
+    );
+
     void deleteAllByUser(Users user);
 
     void deleteAllByTeam(Team team);

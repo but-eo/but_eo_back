@@ -2,6 +2,7 @@ package org.example.but_eo.dto;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.example.but_eo.entity.Team;
 import org.example.but_eo.entity.Team.Event;
 import org.example.but_eo.entity.Team.Team_Case;
@@ -11,6 +12,7 @@ import org.example.but_eo.entity.TeamMember;
 import java.util.List;
 
 @Getter
+@Setter
 @Builder
 public class TeamResponse {
     private String teamId;
@@ -23,6 +25,8 @@ public class TeamResponse {
     private Event event;
     private Team_Type teamType;
     private Team_Case teamCase;
+
+    private String myJoinStatus; // "MEMBER", "PENDING", "NONE"
 
     private int totalMembers;
     private int matchCount;
@@ -54,7 +58,7 @@ public class TeamResponse {
                 .teamType(team.getTeamType())
                 .teamCase(team.getTeamCase())
 
-                .totalMembers(team.getTotalMembers())
+                .totalMembers(team.getTeamMemberList() != null ? team.getTeamMemberList().size() : 0)
                 .matchCount(team.getMatchCount())
                 .winCount(team.getWinCount())
                 .loseCount(team.getLoseCount())
@@ -72,4 +76,5 @@ public class TeamResponse {
                         .toList())
                 .build();
     }
+
 }

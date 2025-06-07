@@ -160,6 +160,11 @@ public class MatchingService {
                 .orElseThrow(() -> new RuntimeException("팀 멤버가 아님"));
         Team challengerTeam = member.getTeam();
 
+        // 리더만 도전 신청 가능
+        if (member.getType() != TeamMember.Type.LEADER) {
+            throw new RuntimeException("리더만 도전 신청할 수 있습니다.");
+        }
+
         // 자기가 만든 매치에 도전 x
         if (matching.getTeam().getTeamId().equals(challengerTeam.getTeamId())) {
             throw new RuntimeException("자기 팀 매치에는 도전할 수 없습니다.");

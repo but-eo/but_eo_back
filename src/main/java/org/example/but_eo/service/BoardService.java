@@ -92,7 +92,7 @@ public class BoardService {
                 .map(mapping -> mapping.getFile().getFilePath())
                 .collect(Collectors.toList());
 
-        List<Comment> commentList = commentRepository.findByBoard_BoardIdAndStateOrderByCreateAtDesc(
+        List<Comment> commentList = commentRepository.findByBoard_BoardIdAndStateOrderByCreatedAtDesc(
                 boardId, Comment.State.PUBLIC
         );
 
@@ -102,8 +102,9 @@ public class BoardService {
                         comment.getUser().getName(),
                         comment.getUser().getUserHashId(),
                         comment.getContent(),
-                        comment.getCreateAt(),
-                        comment.getLikeCount()
+                        comment.getCreatedAt(),
+                        comment.getLikeCount(),
+                        comment.getUser().getProfile()
                 )).toList();
 
         return new BoardDetailResponse(
