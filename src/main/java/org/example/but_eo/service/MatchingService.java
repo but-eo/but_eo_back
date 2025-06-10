@@ -156,10 +156,15 @@ public class MatchingService {
         }
 
         // 현재 유저가 속한 팀 찾기 (도전자)
-        TeamMember member = teamMemberRepository.findByUser_UserHashId(userId)
-                .orElseThrow(() -> new RuntimeException("팀 멤버가 아님"));
-        Team challengerTeam = member.getTeam();
+        // 종목 정보 → Team.Event로 변환
+        Team.Event event = Team.Event.valueOf(matching.getMatchType().name());
 
+        // 조건 좁혀서 리더 단건 조회
+        TeamMember member = teamMemberRepository
+                .findByUser_UserHashIdAndTypeAndTeam_Event(userId, TeamMember.Type.LEADER, event)
+                .orElseThrow(() -> new RuntimeException("해당 종목에서 리더인 팀이 없습니다."));
+
+        Team challengerTeam = member.getTeam();
         // 리더만 도전 신청 가능
         if (member.getType() != TeamMember.Type.LEADER) {
             throw new RuntimeException("리더만 도전 신청할 수 있습니다.");
