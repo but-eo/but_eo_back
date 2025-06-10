@@ -6,14 +6,8 @@ import org.example.but_eo.dto.BoardDetailResponse;
 import org.example.but_eo.dto.BoardRequest;
 import org.example.but_eo.dto.BoardResponse;
 import org.example.but_eo.dto.CommentResponse;
-import org.example.but_eo.entity.Board;
-import org.example.but_eo.entity.BoardMapping;
-import org.example.but_eo.entity.Comment;
-import org.example.but_eo.entity.Users;
-import org.example.but_eo.repository.BoardMappingRepository;
-import org.example.but_eo.repository.BoardRepository;
-import org.example.but_eo.repository.CommentRepository;
-import org.example.but_eo.repository.UsersRepository;
+import org.example.but_eo.entity.*;
+import org.example.but_eo.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -22,7 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -36,6 +32,7 @@ public class BoardService {
     private final BoardMappingRepository boardMappingRepository;
     private final CommentRepository commentRepository;
     private final FileService fileService;
+    private final BoardLikeRepository boardLikeRepository;
 
     // 게시글 생성
     public void createBoard(BoardRequest request, List<MultipartFile> files, String userId) {
@@ -81,6 +78,33 @@ public class BoardService {
         )).toList();
 
     }
+
+    public Map<String, Object> getBoardsWithPaging(Board.Event event, Board.Category category, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Board> boards = boardRepository.findByEventAndCategoryAndState(event, category, Board.State.PUBLIC, pageable);
+
+        List<BoardResponse> content = boards.stream().map(board -> new BoardResponse(
+                board.getBoardId(),
+                board.getTitle(),
+                board.getUser().getUserHashId(),
+                board.getUser().getName(),
+                board.getCategory(),
+                board.getEvent(),
+                board.getCommentCount(),
+                board.getLikeCount(),
+                board.getCreatedAt()
+        )).toList();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", content);
+        response.put("currentPage", boards.getNumber());
+        response.put("totalPages", boards.getTotalPages());
+        response.put("totalElements", boards.getTotalElements());
+        response.put("pageSize", boards.getSize());
+
+        return response;
+    }
+
 
     // 상세 조회
     public BoardDetailResponse getBoardDetail(String boardId) {
@@ -176,4 +200,36 @@ public class BoardService {
         boardMappingRepository.deleteByBoard_BoardId(boardId);
         boardRepository.delete(board);
     }
+
+    // 좋아요 토글
+    public void toggleLike(String boardId, String userId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
+
+        boolean alreadyLiked = boardLikeRepository.existsByUserAndBoard(user, board);
+
+        if (alreadyLiked) {
+            boardLikeRepository.deleteByUserAndBoard(user, board);
+            board.setLikeCount(board.getLikeCount() - 1);
+        } else {
+            BoardLike like = new BoardLike();
+            like.setUser(user);
+            like.setBoard(board);
+            like.setLikedAt(LocalDateTime.now());
+            boardLikeRepository.save(like);
+            board.setLikeCount(board.getLikeCount() + 1);
+        }
+
+        boardRepository.save(board);
+    }
+
+    // 특정 게시글에 현재 로그인 유저가 좋아요를 눌렀는지 여부
+    public boolean hasUserLiked(String boardId, String userId) {
+        return boardLikeRepository.existsByUser_UserHashIdAndBoard_BoardId(userId, boardId);
+    }
+
+
 }
