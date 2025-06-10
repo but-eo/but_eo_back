@@ -34,6 +34,7 @@ public class BoardController {
     }
 
     //게시판 간단 조회
+    /*
     @GetMapping
     public ResponseEntity<List<BoardResponse>> getBoards(
             @RequestParam Board.Event event,
@@ -44,7 +45,17 @@ public class BoardController {
         List<BoardResponse> boardList = boardService.getBoardsByEventAndCategory(event, category, page, size);
         return ResponseEntity.ok(boardList);
     }
+    */
 
+    @GetMapping
+    public ResponseEntity<?> getBoards(
+            @RequestParam Board.Event event,
+            @RequestParam Board.Category category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return ResponseEntity.ok(boardService.getBoardsWithPaging(event, category, page, size));
+    }
 
     //게시판 상세조회
     @GetMapping("/{boardId}")
@@ -71,12 +82,28 @@ public class BoardController {
         return ResponseEntity.ok("게시글 삭제 완료");
     }
 
-    //게시글 완전 삭제
+    // 게시글 완전 삭제
     @DeleteMapping("/{boardId}/hard")
     public ResponseEntity<?> deleteBoardHard(@PathVariable String boardId) {
         String userId = SecurityUtil.getCurrentUserId();
         boardService.deleteBoardHard(boardId, userId);
         return ResponseEntity.ok("게시글 완전 삭제 완료");
+    }
+
+    // 좋아요 기능
+    @PostMapping("/{boardId}/like-toggle")
+    public ResponseEntity<?> toggleLike(@PathVariable String boardId) {
+        String userId = SecurityUtil.getCurrentUserId();
+        boardService.toggleLike(boardId, userId);
+        return ResponseEntity.ok("좋아요 토글 완료");
+    }
+    
+    //특정 게시글에 현재 로그인 유저가 좋아요를 눌렀는지 여부
+    @GetMapping("/{boardId}/liked")
+    public ResponseEntity<Boolean> hasLiked(@PathVariable String boardId) {
+        String userId = SecurityUtil.getCurrentUserId();
+        boolean liked = boardService.hasUserLiked(boardId, userId);
+        return ResponseEntity.ok(liked);
     }
 
 
