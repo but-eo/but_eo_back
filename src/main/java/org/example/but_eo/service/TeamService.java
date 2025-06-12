@@ -207,6 +207,16 @@ public class TeamService {
                 .collect(Collectors.toList());
     }
 
+    // 내가 속한 팀 목록
+    public List<TeamResponse> getTeamsWhereUserIsMember(String userId) {
+        List<TeamMember> memberships = teamMemberRepository.findAllByUser_UserHashId(userId);
+        return memberships.stream()
+                .map(TeamMember::getTeam)
+                .filter(team -> team.getState() == Team.State.ACTIVE)
+                .map(TeamResponse::from)
+                .collect(Collectors.toList());
+    }
+
     // 내부 이미지 저장 헬퍼
     private String saveImage(MultipartFile file) {
         try {
