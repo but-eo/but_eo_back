@@ -371,5 +371,85 @@ public class MatchingService {
         matchingRepository.save(matching);
     }
 
+    // 팀 ID로 매치 리스트 조회 (페이징X 버전)
+    public List<MatchingListResponse> getMatchingsByTeamId(String teamId) {
+        List<Matching> matchings = matchingRepository.findByTeam_TeamId(teamId);
+        return matchings.stream()
+                .map(m -> new MatchingListResponse(
+                        m.getMatchId(),
+                        m.getMatchRegion() != null ? m.getMatchRegion() : "미정",
+                        m.getTeam().getTeamName(),
+                        m.getTeam().getTeamImg(),
+                        m.getTeam().getRegion(),
+                        m.getTeam().getRating(),
+                        m.getStadium() != null ? m.getStadium().getStadiumName() : "미정",
+                        m.getMatchDate(),
+                        m.getMatchType().getDisplayName(),
+                        m.getLoan()
+                ))
+                .toList();
+    }
+
+    // 도전 수락 - 팀ID + 매치ID + 도전자팀ID + 리더 권한 + 안전 검증
+    @Transactional
+    public void acceptChallengeByTeam(String teamId, String matchId, String challengerTeamId, String userId) {
+        // (1) 매치 존재 및 소유팀 체크
+        Matching matching = matchingRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("매치 없음"));
+        if (!matching.getTeam().getTeamId().equals(teamId)) {
+            throw new RuntimeException("이 팀이 만든 매치가 아닙니다.");
+        }
+        // (2) 리더 권한 체크
+        boolean isLeader = matching.getTeam().getTeamMemberList().stream()
+                .anyMatch(m -> m.getUser().getUserHashId().equals(userId) && m.getType() == TeamMember.Type.LEADER);
+        if (!isLeader) {
+            throw new RuntimeException("리더만 수락 가능합니다.");
+        }
+        // (3) 상태 체크
+        if (matching.getState() != Matching.State.WAITING)
+            throw new RuntimeException("이미 수락된 매치입니다.");
+
+        // (4) 도전자팀 존재 및 신청 존재 체크
+        Team challenger = teamRepository.findById(challengerTeamId)
+                .orElseThrow(() -> new RuntimeException("도전 팀 없음"));
+        ChallengerKey key = new ChallengerKey(matchId, challengerTeamId);
+        if (!challengerListRepository.existsById(key)) {
+            throw new RuntimeException("도전 신청이 없습니다.");
+        }
+
+        // (5) 수락 처리
+        matching.setChallengerTeam(challenger);
+        matching.setState(Matching.State.SUCCESS);
+        matchingRepository.save(matching);
+        // 나머지 도전 신청 삭제
+        challengerListRepository.deleteAllByMatching_MatchId(matchId);
+    }
+
+    // 도전 거절 - 팀ID + 매치ID + 도전자팀ID + 리더 권한 + 안전 검증
+    @Transactional
+    public void declineChallengeByTeam(String teamId, String matchId, String challengerTeamId, String userId) {
+        // (1) 매치 존재 및 소유팀 체크
+        Matching matching = matchingRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("매치 없음"));
+        if (!matching.getTeam().getTeamId().equals(teamId)) {
+            throw new RuntimeException("이 팀이 만든 매치가 아닙니다.");
+        }
+        // (2) 리더 권한 체크
+        boolean isLeader = matching.getTeam().getTeamMemberList().stream()
+                .anyMatch(m -> m.getUser().getUserHashId().equals(userId) && m.getType() == TeamMember.Type.LEADER);
+        if (!isLeader) {
+            throw new RuntimeException("리더만 거절 가능합니다.");
+        }
+        // (3) 도전자팀 존재 및 신청 존재 체크
+        ChallengerKey key = new ChallengerKey(matchId, challengerTeamId);
+        if (!challengerListRepository.existsById(key)) {
+            throw new RuntimeException("도전 신청이 없습니다.");
+        }
+        // (4) 거절 처리
+        challengerListRepository.deleteById(key);
+    }
+
+
+
 }
 
