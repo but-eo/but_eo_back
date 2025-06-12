@@ -16,8 +16,9 @@ public class BoardResponse {
     private String userHashId;
     private String userName;
     private Board.Category category;
-    private Board.Event event; // 추가
+    private Board.Event event;
     private int commentCount;
     private int likeCount;
     private LocalDateTime createdAt;
+    private boolean isLiked;
 }
