@@ -6,6 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface BoardLikeRepository extends JpaRepository<BoardLike, BoardLikeKey> {
     boolean existsByUserAndBoard(Users user, Board board);
     void deleteByUserAndBoard(Users user, Board board);
-    boolean existsByUser_UserHashIdAndBoard_BoardId(String userId, String boardId);
-    boolean existsByUser_UserIdAndBoard_BoardId(String userId, String boardId);
+    boolean existsByUser_UserHashIdAndBoard_BoardId(String userHashId, String boardId);
 }
