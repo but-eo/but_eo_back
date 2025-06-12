@@ -54,8 +54,10 @@ public class BoardController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        return ResponseEntity.ok(boardService.getBoardsWithPaging(event, category, page, size));
+        String userId = SecurityUtil.getCurrentUserId();
+        return ResponseEntity.ok(boardService.getBoardsWithPaging(event, category, page, size, userId));
     }
+
 
     //게시판 상세조회
     @GetMapping("/{boardId}")

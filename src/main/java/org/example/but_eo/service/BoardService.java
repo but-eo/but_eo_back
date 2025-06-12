@@ -60,40 +60,47 @@ public class BoardService {
     }
 
     // 게시판 조회 (Event + Category 기반)
-    public List<BoardResponse> getBoardsByEventAndCategory(Board.Event event, Board.Category category, int page, int size) {
+    public List<BoardResponse> getBoardsByEventAndCategory(Board.Event event, Board.Category category, int page, int size, String userId) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-
         Page<Board> boards = boardRepository.findByEventAndCategoryAndState(event, category, Board.State.PUBLIC, pageable);
 
-        return boards.stream().map(board -> new BoardResponse(
-                board.getBoardId(),
-                board.getTitle(),
-                board.getUser().getUserHashId(),  // userHashId 먼저
-                board.getUser().getName(),        // userName 그 다음
-                board.getCategory(),
-                board.getEvent(),
-                board.getCommentCount(),
-                board.getLikeCount(),
-                board.getCreatedAt()
-        )).toList();
-
+        return boards.stream().map(board -> {
+            boolean isLiked = boardLikeRepository.existsByUser_UserHashIdAndBoard_BoardId(userId, board.getBoardId());
+            return new BoardResponse(
+                    board.getBoardId(),
+                    board.getTitle(),
+                    board.getUser().getUserHashId(),
+                    board.getUser().getName(),
+                    board.getCategory(),
+                    board.getEvent(),
+                    board.getCommentCount(),
+                    board.getLikeCount(),
+                    board.getCreatedAt(),
+                    isLiked // <<== 여기!
+            );
+        }).toList();
     }
 
-    public Map<String, Object> getBoardsWithPaging(Board.Event event, Board.Category category, int page, int size) {
+
+    public Map<String, Object> getBoardsWithPaging(Board.Event event, Board.Category category, int page, int size, String userId) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Board> boards = boardRepository.findByEventAndCategoryAndState(event, category, Board.State.PUBLIC, pageable);
 
-        List<BoardResponse> content = boards.stream().map(board -> new BoardResponse(
-                board.getBoardId(),
-                board.getTitle(),
-                board.getUser().getUserHashId(),
-                board.getUser().getName(),
-                board.getCategory(),
-                board.getEvent(),
-                board.getCommentCount(),
-                board.getLikeCount(),
-                board.getCreatedAt()
-        )).toList();
+        List<BoardResponse> content = boards.stream().map(board -> {
+            boolean isLiked = boardLikeRepository.existsByUser_UserHashIdAndBoard_BoardId(userId, board.getBoardId());
+            return new BoardResponse(
+                    board.getBoardId(),
+                    board.getTitle(),
+                    board.getUser().getUserHashId(),
+                    board.getUser().getName(),
+                    board.getCategory(),
+                    board.getEvent(),
+                    board.getCommentCount(),
+                    board.getLikeCount(),
+                    board.getCreatedAt(),
+                    isLiked
+            );
+        }).toList();
 
         Map<String, Object> response = new HashMap<>();
         response.put("content", content);
@@ -104,6 +111,7 @@ public class BoardService {
 
         return response;
     }
+
 
 
     // 상세 조회
