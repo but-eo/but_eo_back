@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.example.but_eo.entity.Matching;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -28,4 +29,6 @@ public class MatchingDetailResponse {
     private Integer winnerScore;
     private Integer loserScore;
     private Matching.State state;
+    private ChallengerTeamResponse challengerTeam;
+    private List<ChallengerTeamResponse> challengerTeams;
 }
