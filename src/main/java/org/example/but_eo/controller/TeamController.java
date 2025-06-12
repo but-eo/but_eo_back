@@ -101,6 +101,14 @@ public class TeamController {
         return ResponseEntity.ok(teams);
     }
 
+    // 내가 속한 팀 목록 조회 (리더가 아니어도 조회 가능)
+    @GetMapping("/my-teams")
+    public ResponseEntity<List<TeamResponse>> getMyTeams(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        List<TeamResponse> teams = teamService.getTeamsWhereUserIsMember(userId);
+        return ResponseEntity.ok(teams);
+    }
+    
     // 팀 신청 조회
     @GetMapping("/team/{teamId}/requests")
     public ResponseEntity<List<TeamJoinRequestDto>> getJoinRequests(

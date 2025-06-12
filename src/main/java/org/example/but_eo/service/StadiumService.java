@@ -93,11 +93,11 @@ public class StadiumService {
             for (StadiumMapping mapping : oldMappings) {
                 File oldFile = mapping.getFile();
 
-                // 1. 매핑 먼저 제거
+                // 매핑 먼저 제거
                 stadium.getStadiumMappingList().remove(mapping);
                 stadiumMappingRepository.delete(mapping);
 
-                // 2. 파일 삭제
+                // 파일 삭제
                 if (oldFile != null) {
                     try {
                         String fullPath = System.getProperty("user.dir") + oldFile.getFilePath();
