@@ -65,7 +65,7 @@ public class BoardService {
         Page<Board> boards = boardRepository.findByEventAndCategoryAndState(event, category, Board.State.PUBLIC, pageable);
 
         return boards.stream().map(board -> {
-            boolean isLiked = boardLikeRepository.existsByUser_UserIdAndBoard_BoardId(userId, board.getBoardId());
+            boolean isLiked = boardLikeRepository.existsByUser_UserHashIdAndBoard_BoardId(userId, board.getBoardId());
             return new BoardResponse(
                     board.getBoardId(),
                     board.getTitle(),
@@ -88,7 +88,7 @@ public class BoardService {
         Page<Board> boards = boardRepository.findByEventAndCategoryAndState(event, category, Board.State.PUBLIC, pageable);
 
         List<BoardResponse> content = boards.stream().map(board -> {
-            boolean isLiked = boardLikeRepository.existsByUser_UserIdAndBoard_BoardId(userId, board.getBoardId());
+            boolean isLiked = boardLikeRepository.existsByUser_UserHashIdAndBoard_BoardId(userId, board.getBoardId());
             return new BoardResponse(
                     board.getBoardId(),
                     board.getTitle(),
@@ -237,7 +237,7 @@ public class BoardService {
 
     // 특정 게시글에 현재 로그인 유저가 좋아요를 눌렀는지 여부
     public boolean hasUserLiked(String boardId, String userId) {
-        return boardLikeRepository.existsByUser_UserIdAndBoard_BoardId(userId, boardId);
+        return boardLikeRepository.existsByUser_UserHashIdAndBoard_BoardId(userId, boardId);
     }
 
 }
