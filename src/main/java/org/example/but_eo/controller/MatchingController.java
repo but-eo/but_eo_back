@@ -98,6 +98,37 @@ public class MatchingController {
         return ResponseEntity.ok("경기 결과 등록 완료");
     }
 
+    // 팀 ID로 매치 리스트 조회 (페이징X 버전)
+    @GetMapping("/team/{teamId}")
+    public ResponseEntity<List<MatchingListResponse>> getMyTeamMatchings(@PathVariable String teamId) {
+        List<MatchingListResponse> result = matchingService.getMatchingsByTeamId(teamId);
+        return ResponseEntity.ok(result);
+    }
+
+    // 도전 수락 (리더만 가능)
+    @PatchMapping("/team/{teamId}/matchings/{matchId}/accept/{challengerTeamId}")
+    public ResponseEntity<?> acceptChallengeByTeam(
+            @PathVariable String teamId,
+            @PathVariable String matchId,
+            @PathVariable String challengerTeamId
+    ) {
+        String userId = SecurityUtil.getCurrentUserId();
+        matchingService.acceptChallengeByTeam(teamId, matchId, challengerTeamId, userId);
+        return ResponseEntity.ok("도전 수락 완료");
+    }
+
+    // 도전 거절 (리더만 가능)
+    @PatchMapping("/team/{teamId}/matchings/{matchId}/decline/{challengerTeamId}")
+    public ResponseEntity<?> declineChallengeByTeam(
+            @PathVariable String teamId,
+            @PathVariable String matchId,
+            @PathVariable String challengerTeamId
+    ) {
+        String userId = SecurityUtil.getCurrentUserId();
+        matchingService.declineChallengeByTeam(teamId, matchId, challengerTeamId, userId);
+        return ResponseEntity.ok("도전 거절 완료");
+    }
+
 
     public class SecurityUtil {
         public static String getCurrentUserId() {
