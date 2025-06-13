@@ -160,7 +160,15 @@ public class MatchingController {
         List<MatchingListResponse> result = matchingService.getCompleteMatchingsByTeam(teamId);
         return ResponseEntity.ok(result);
     }
-    
+
+    // 내가 속한 전체 팀중 젤 최신 일정 가져오기
+    @GetMapping("/my/latest-success")
+    public ResponseEntity<MatchingListResponse> getLatestSuccessMatchByUser() {
+        String userId = SecurityUtil.getCurrentUserId();
+        MatchingListResponse result = matchingService.getLatestSuccessMatchByUser(userId);
+        return ResponseEntity.ok(result);
+    }
+
     public class SecurityUtil {
         public static String getCurrentUserId() {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
