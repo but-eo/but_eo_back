@@ -26,5 +26,24 @@ public class MatchingListResponse {
     private Boolean loan;
     private ChallengerTeamResponse challengerTeam;
     private List<ChallengerTeamResponse> challengerTeams;
+
+    @Override
+    public String toString() {
+        return "MatchingListResponse{" +
+                "matchId='" + matchId + '\'' +
+                ", matchRegion='" + matchRegion + '\'' +
+                ", teamName='" + teamName + '\'' +
+                ", teamImg='" + teamImg + '\'' +
+                ", teamRegion='" + teamRegion + '\'' +
+                ", teamRating=" + teamRating +
+                ", stadiumName='" + stadiumName + '\'' +
+                ", matchDate=" + matchDate +
+                ", matchType='" + matchType + '\'' +
+                ", loan=" + loan +
+                ", challengerTeam=" + challengerTeam +
+                ", challengerTeams=" + challengerTeams +
+                '}';
+    }
+
 }
 

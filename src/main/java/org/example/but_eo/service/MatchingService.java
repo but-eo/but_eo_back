@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -699,24 +700,53 @@ public class MatchingService {
     public MatchingListResponse getLatestSuccessMatchByUser(String userId) {
         // 1. 내가 속한 팀 리스트 가져오기
         List<TeamMember> teamMembers = teamMemberRepository.findAllByUser_UserHashId(userId);
+        System.out.println("userId : " + userId);
+
         List<String> teamIds = teamMembers.stream()
                 .map(tm -> tm.getTeam().getTeamId())
                 .distinct()
                 .toList();
+        System.out.println("teamIds : " + teamIds);
 
         if (teamIds.isEmpty()) {
+            System.out.println("소속된 팀이 없습니다: " + userId);
             throw new RuntimeException("소속된 팀이 없습니다.");
         }
 
-        // 2. 팀ID 리스트로 SUCCESS 상태 가장 최신 매치 1건 조회
-        Matching matching = matchingRepository
-                .findTopByTeam_TeamIdInAndStateOrderByMatchDateDesc(teamIds, Matching.State.SUCCESS)
-                .orElseThrow(() -> new RuntimeException("SUCCESS 상태 매치가 없습니다."));
+        // 2. 현재 시각 기준 가장 가까운 미래 SUCCESS 매치 1건 (호스트/챌린저 모두 포함)
+        LocalDateTime now = LocalDateTime.now();
+        Optional<Matching> hostMatchingOpt =
+                matchingRepository.findTopByTeam_TeamIdInAndStateAndMatchDateAfterOrderByMatchDateAsc(
+                        teamIds, Matching.State.SUCCESS, now);
+
+        Optional<Matching> challengerMatchingOpt =
+                matchingRepository.findTopByChallengerTeam_TeamIdInAndStateAndMatchDateAfterOrderByMatchDateAsc(
+                        teamIds, Matching.State.SUCCESS, now);
+
+        Matching selected = null;
+        if (hostMatchingOpt.isPresent() && challengerMatchingOpt.isPresent()) {
+            LocalDateTime hostDate = hostMatchingOpt.get().getMatchDate();
+            LocalDateTime challengerDate = challengerMatchingOpt.get().getMatchDate();
+            System.out.println("host matchId : " + hostMatchingOpt.get().getMatchId() + ", date : " + hostDate);
+            System.out.println("challenger matchId : " + challengerMatchingOpt.get().getMatchId() + ", date : " + challengerDate);
+            selected = hostDate.isBefore(challengerDate) ? hostMatchingOpt.get() : challengerMatchingOpt.get();
+        } else if (hostMatchingOpt.isPresent()) {
+            selected = hostMatchingOpt.get();
+            System.out.println("host matchId : " + selected.getMatchId() + ", date : " + selected.getMatchDate());
+        } else if (challengerMatchingOpt.isPresent()) {
+            selected = challengerMatchingOpt.get();
+            System.out.println("challenger matchId : " + selected.getMatchId() + ", date : " + selected.getMatchDate());
+        } else {
+            System.out.println("SUCCESS 상태 미래 매치가 없습니다 : " + teamIds);
+            throw new RuntimeException("SUCCESS 상태 미래 매치가 없습니다.");
+        }
+
+        System.out.println("선택된 매치 matchId : " + selected.getMatchId());
 
         // 3. 매치 DTO 매핑 (기존 방식)
         ChallengerTeamResponse challengerTeam = null;
-        if (matching.getChallengerTeam() != null) {
-            Team challenger = matching.getChallengerTeam();
+        if (selected.getChallengerTeam() != null) {
+            Team challenger = selected.getChallengerTeam();
             challengerTeam = new ChallengerTeamResponse(
                     challenger.getTeamId(),
                     challenger.getTeamName(),
@@ -724,7 +754,7 @@ public class MatchingService {
                     challenger.getRating()
             );
         }
-        List<ChallengerList> challengers = challengerListRepository.findByMatching_MatchId(matching.getMatchId());
+        List<ChallengerList> challengers = challengerListRepository.findByMatching_MatchId(selected.getMatchId());
         List<ChallengerTeamResponse> challengerTeams = challengers.stream()
                 .map(c -> new ChallengerTeamResponse(
                         c.getTeam().getTeamId(),
@@ -733,21 +763,25 @@ public class MatchingService {
                         c.getTeam().getRating()
                 )).toList();
 
-        return new MatchingListResponse(
-                matching.getMatchId(),
-                matching.getMatchRegion() != null ? matching.getMatchRegion() : "미정",
-                matching.getTeam().getTeamName(),
-                matching.getTeam().getTeamImg(),
-                matching.getTeam().getRegion(),
-                matching.getTeam().getRating(),
-                matching.getStadium() != null ? matching.getStadium().getStadiumName() : "미정",
-                matching.getMatchDate(),
-                matching.getMatchType().getDisplayName(),
-                matching.getLoan(),
+        MatchingListResponse response = new MatchingListResponse(
+                selected.getMatchId(),
+                selected.getMatchRegion() != null ? selected.getMatchRegion() : "미정",
+                selected.getTeam().getTeamName(),
+                selected.getTeam().getTeamImg(),
+                selected.getTeam().getRegion(),
+                selected.getTeam().getRating(),
+                selected.getStadium() != null ? selected.getStadium().getStadiumName() : "미정",
+                selected.getMatchDate(),
+                selected.getMatchType().getDisplayName(),
+                selected.getLoan(),
                 challengerTeam,
                 challengerTeams
         );
+
+        System.out.println("result : " + response);
+        return response;
     }
+
 
 
 }

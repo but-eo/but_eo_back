@@ -39,5 +39,12 @@ public interface MatchingRepository extends JpaRepository<Matching, String> {
     List<Matching> findByTeam_TeamIdAndState(String teamId, Matching.State state);
 
     Optional<Matching> findTopByTeam_TeamIdInAndStateOrderByMatchDateDesc(List<String> teamIds, Matching.State state);
+
+    // 가장 가까운 미래 SUCCESS 매치 1건 조회 (여러 팀에 대해)
+    // 호스트 팀으로 속한 매치
+    Optional<Matching> findTopByTeam_TeamIdInAndStateAndMatchDateAfterOrderByMatchDateAsc(List<String> teamIds, Matching.State state, LocalDateTime matchDate);
+
+    // 챌린저 팀으로 속한 매치
+    Optional<Matching> findTopByChallengerTeam_TeamIdInAndStateAndMatchDateAfterOrderByMatchDateAsc(List<String> teamIds, Matching.State state, LocalDateTime matchDate);
 }
 
