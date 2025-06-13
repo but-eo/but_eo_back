@@ -240,4 +240,35 @@ public class BoardService {
         return boardLikeRepository.existsByUser_UserHashIdAndBoard_BoardId(userId, boardId);
     }
 
+    // 내가 쓴 게시글 조회 (페이징)
+    public Map<String, Object> getBoardsByUser(String userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Board> boards = boardRepository.findByUser_UserHashIdAndState(userId, Board.State.PUBLIC, pageable);
+
+        List<BoardResponse> content = boards.stream().map(board -> {
+            boolean isLiked = boardLikeRepository.existsByUser_UserHashIdAndBoard_BoardId(userId, board.getBoardId());
+            return new BoardResponse(
+                    board.getBoardId(),
+                    board.getTitle(),
+                    board.getUser().getUserHashId(),
+                    board.getUser().getName(),
+                    board.getCategory(),
+                    board.getEvent(),
+                    board.getCommentCount(),
+                    board.getLikeCount(),
+                    board.getCreatedAt(),
+                    isLiked
+            );
+        }).toList();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", content);
+        response.put("currentPage", boards.getNumber());
+        response.put("totalPages", boards.getTotalPages());
+        response.put("totalElements", boards.getTotalElements());
+        response.put("pageSize", boards.getSize());
+
+        return response;
+    }
+
 }
