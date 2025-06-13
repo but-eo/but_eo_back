@@ -35,6 +35,7 @@ public interface MatchingRepository extends JpaRepository<Matching, String> {
     // 매치 중복 등록 방지
     boolean existsByTeam_TeamIdAndMatchDate(String teamId, LocalDateTime matchDate);
 
+    List<Matching> findByTeam_TeamIdAndState(String teamId, Matching.State state);
 
 }
 

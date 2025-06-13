@@ -129,7 +129,38 @@ public class MatchingController {
         return ResponseEntity.ok("도전 거절 완료");
     }
 
+    // Success 조회
+    @GetMapping("/success")
+    public ResponseEntity<Page<MatchingListResponse>> getSuccessMatchings(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<MatchingListResponse> result = matchingService.getSuccessMatchings(page, size);
+        return ResponseEntity.ok(result);
+    }
 
+    // Complete 조회
+    @GetMapping("/complete")
+    public ResponseEntity<Page<MatchingListResponse>> getCompleteMatchings(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<MatchingListResponse> result = matchingService.getCompleteMatchings(page, size);
+        return ResponseEntity.ok(result);
+    }
+
+    // 팀의 매치 성공 조회
+    @GetMapping("/team/{teamId}/success")
+    public ResponseEntity<List<MatchingListResponse>> getSuccessMatchingsByTeam(@PathVariable String teamId) {
+        List<MatchingListResponse> result = matchingService.getSuccessMatchingsByTeam(teamId);
+        return ResponseEntity.ok(result);
+    }
+
+    // 팀의 매치 완료 조회
+    @GetMapping("/team/{teamId}/complete")
+    public ResponseEntity<List<MatchingListResponse>> getCompleteMatchingsByTeam(@PathVariable String teamId) {
+        List<MatchingListResponse> result = matchingService.getCompleteMatchingsByTeam(teamId);
+        return ResponseEntity.ok(result);
+    }
+    
     public class SecurityUtil {
         public static String getCurrentUserId() {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

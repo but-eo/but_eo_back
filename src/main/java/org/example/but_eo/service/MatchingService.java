@@ -399,7 +399,7 @@ public class MatchingService {
         // 레이팅 반영
         if (winnerScore > loserScore) {
             // 승자 처리
-            winnerTeam.setRating(winnerTeam.getRating() + 3);
+            winnerTeam.setRating(winnerTeam.getRating() + 30);
             winnerTeam.setMatchCount(winnerTeam.getMatchCount() + 1);
             winnerTeam.setWinCount(winnerTeam.getWinCount() + 1);
 
@@ -407,7 +407,7 @@ public class MatchingService {
             loserTeam.setMatchCount(loserTeam.getMatchCount() + 1);
             loserTeam.setLoseCount(loserTeam.getLoseCount() + 1);
         } else if (winnerScore == loserScore) {
-            int bonus = (winnerScore == 0) ? 1 : 2;         //무승부면 2점 0:0이면 1점
+            int bonus = (winnerScore == 0) ? 10 : 20;         //무승부면 2점 0:0이면 1점
             team1.setRating(team1.getRating() + bonus);
             team2.setRating(team2.getRating() + bonus);
             
@@ -527,7 +527,173 @@ public class MatchingService {
         challengerListRepository.deleteById(key);
     }
 
+    // Success 조회
+    public Page<MatchingListResponse> getSuccessMatchings(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("matchDate").descending());
+        Page<Matching> matchingPage = matchingRepository.findByState(Matching.State.SUCCESS, pageable);
 
+        return matchingPage.map(m -> {
+            ChallengerTeamResponse challengerTeam = null;
+            if (m.getChallengerTeam() != null) {
+                Team challenger = m.getChallengerTeam();
+                challengerTeam = new ChallengerTeamResponse(
+                        challenger.getTeamId(),
+                        challenger.getTeamName(),
+                        challenger.getRegion(),
+                        challenger.getRating()
+                );
+            }
+            List<ChallengerList> challengers = challengerListRepository.findByMatching_MatchId(m.getMatchId());
+            List<ChallengerTeamResponse> challengerTeams = challengers.stream()
+                    .map(c -> new ChallengerTeamResponse(
+                            c.getTeam().getTeamId(),
+                            c.getTeam().getTeamName(),
+                            c.getTeam().getRegion(),
+                            c.getTeam().getRating()
+                    )).toList();
+
+            return new MatchingListResponse(
+                    m.getMatchId(),
+                    m.getMatchRegion() != null ? m.getMatchRegion() : "미정",
+                    m.getTeam().getTeamName(),
+                    m.getTeam().getTeamImg(),
+                    m.getTeam().getRegion(),
+                    m.getTeam().getRating(),
+                    m.getStadium() != null ? m.getStadium().getStadiumName() : "미정",
+                    m.getMatchDate(),
+                    m.getMatchType().getDisplayName(),
+                    m.getLoan(),
+                    challengerTeam,
+                    challengerTeams
+            );
+        });
+    }
+
+    // Complete 조회
+    public Page<MatchingListResponse> getCompleteMatchings(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("matchDate").descending());
+        Page<Matching> matchingPage = matchingRepository.findByState(Matching.State.COMPLETE, pageable);
+
+        return matchingPage.map(m -> {
+            ChallengerTeamResponse challengerTeam = null;
+            if (m.getChallengerTeam() != null) {
+                Team challenger = m.getChallengerTeam();
+                challengerTeam = new ChallengerTeamResponse(
+                        challenger.getTeamId(),
+                        challenger.getTeamName(),
+                        challenger.getRegion(),
+                        challenger.getRating()
+                );
+            }
+            List<ChallengerList> challengers = challengerListRepository.findByMatching_MatchId(m.getMatchId());
+            List<ChallengerTeamResponse> challengerTeams = challengers.stream()
+                    .map(c -> new ChallengerTeamResponse(
+                            c.getTeam().getTeamId(),
+                            c.getTeam().getTeamName(),
+                            c.getTeam().getRegion(),
+                            c.getTeam().getRating()
+                    )).toList();
+
+            return new MatchingListResponse(
+                    m.getMatchId(),
+                    m.getMatchRegion() != null ? m.getMatchRegion() : "미정",
+                    m.getTeam().getTeamName(),
+                    m.getTeam().getTeamImg(),
+                    m.getTeam().getRegion(),
+                    m.getTeam().getRating(),
+                    m.getStadium() != null ? m.getStadium().getStadiumName() : "미정",
+                    m.getMatchDate(),
+                    m.getMatchType().getDisplayName(),
+                    m.getLoan(),
+                    challengerTeam,
+                    challengerTeams
+            );
+        });
+    }
+
+    // 팀의 매치 성공 조회
+    public List<MatchingListResponse> getSuccessMatchingsByTeam(String teamId) {
+        List<Matching> matchings = matchingRepository.findByTeam_TeamIdAndState(teamId, Matching.State.SUCCESS);
+        return matchings.stream()
+                .map(m -> {
+                    ChallengerTeamResponse challengerTeam = null;
+                    if (m.getChallengerTeam() != null) {
+                        Team challenger = m.getChallengerTeam();
+                        challengerTeam = new ChallengerTeamResponse(
+                                challenger.getTeamId(),
+                                challenger.getTeamName(),
+                                challenger.getRegion(),
+                                challenger.getRating()
+                        );
+                    }
+                    List<ChallengerList> challengers = challengerListRepository.findByMatching_MatchId(m.getMatchId());
+                    List<ChallengerTeamResponse> challengerTeams = challengers.stream()
+                            .map(c -> new ChallengerTeamResponse(
+                                    c.getTeam().getTeamId(),
+                                    c.getTeam().getTeamName(),
+                                    c.getTeam().getRegion(),
+                                    c.getTeam().getRating()
+                            )).toList();
+
+                    return new MatchingListResponse(
+                            m.getMatchId(),
+                            m.getMatchRegion() != null ? m.getMatchRegion() : "미정",
+                            m.getTeam().getTeamName(),
+                            m.getTeam().getTeamImg(),
+                            m.getTeam().getRegion(),
+                            m.getTeam().getRating(),
+                            m.getStadium() != null ? m.getStadium().getStadiumName() : "미정",
+                            m.getMatchDate(),
+                            m.getMatchType().getDisplayName(),
+                            m.getLoan(),
+                            challengerTeam,
+                            challengerTeams
+                    );
+                })
+                .toList();
+    }
+
+    // 팀의 매치 완료 조회
+    public List<MatchingListResponse> getCompleteMatchingsByTeam(String teamId) {
+        List<Matching> matchings = matchingRepository.findByTeam_TeamIdAndState(teamId, Matching.State.COMPLETE);
+        return matchings.stream()
+                .map(m -> {
+                    ChallengerTeamResponse challengerTeam = null;
+                    if (m.getChallengerTeam() != null) {
+                        Team challenger = m.getChallengerTeam();
+                        challengerTeam = new ChallengerTeamResponse(
+                                challenger.getTeamId(),
+                                challenger.getTeamName(),
+                                challenger.getRegion(),
+                                challenger.getRating()
+                        );
+                    }
+                    List<ChallengerList> challengers = challengerListRepository.findByMatching_MatchId(m.getMatchId());
+                    List<ChallengerTeamResponse> challengerTeams = challengers.stream()
+                            .map(c -> new ChallengerTeamResponse(
+                                    c.getTeam().getTeamId(),
+                                    c.getTeam().getTeamName(),
+                                    c.getTeam().getRegion(),
+                                    c.getTeam().getRating()
+                            )).toList();
+
+                    return new MatchingListResponse(
+                            m.getMatchId(),
+                            m.getMatchRegion() != null ? m.getMatchRegion() : "미정",
+                            m.getTeam().getTeamName(),
+                            m.getTeam().getTeamImg(),
+                            m.getTeam().getRegion(),
+                            m.getTeam().getRating(),
+                            m.getStadium() != null ? m.getStadium().getStadiumName() : "미정",
+                            m.getMatchDate(),
+                            m.getMatchType().getDisplayName(),
+                            m.getLoan(),
+                            challengerTeam,
+                            challengerTeams
+                    );
+                })
+                .toList();
+    }
 
 }
 
