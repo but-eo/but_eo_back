@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MatchingRepository extends JpaRepository<Matching, String> {
@@ -37,5 +38,6 @@ public interface MatchingRepository extends JpaRepository<Matching, String> {
 
     List<Matching> findByTeam_TeamIdAndState(String teamId, Matching.State state);
 
+    Optional<Matching> findTopByTeam_TeamIdInAndStateOrderByMatchDateDesc(List<String> teamIds, Matching.State state);
 }
 

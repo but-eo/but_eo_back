@@ -695,5 +695,60 @@ public class MatchingService {
                 .toList();
     }
 
+    // 내가 속한 전체 팀중 젤 최신 일정 가져오기
+    public MatchingListResponse getLatestSuccessMatchByUser(String userId) {
+        // 1. 내가 속한 팀 리스트 가져오기
+        List<TeamMember> teamMembers = teamMemberRepository.findAllByUser_UserHashId(userId);
+        List<String> teamIds = teamMembers.stream()
+                .map(tm -> tm.getTeam().getTeamId())
+                .distinct()
+                .toList();
+
+        if (teamIds.isEmpty()) {
+            throw new RuntimeException("소속된 팀이 없습니다.");
+        }
+
+        // 2. 팀ID 리스트로 SUCCESS 상태 가장 최신 매치 1건 조회
+        Matching matching = matchingRepository
+                .findTopByTeam_TeamIdInAndStateOrderByMatchDateDesc(teamIds, Matching.State.SUCCESS)
+                .orElseThrow(() -> new RuntimeException("SUCCESS 상태 매치가 없습니다."));
+
+        // 3. 매치 DTO 매핑 (기존 방식)
+        ChallengerTeamResponse challengerTeam = null;
+        if (matching.getChallengerTeam() != null) {
+            Team challenger = matching.getChallengerTeam();
+            challengerTeam = new ChallengerTeamResponse(
+                    challenger.getTeamId(),
+                    challenger.getTeamName(),
+                    challenger.getRegion(),
+                    challenger.getRating()
+            );
+        }
+        List<ChallengerList> challengers = challengerListRepository.findByMatching_MatchId(matching.getMatchId());
+        List<ChallengerTeamResponse> challengerTeams = challengers.stream()
+                .map(c -> new ChallengerTeamResponse(
+                        c.getTeam().getTeamId(),
+                        c.getTeam().getTeamName(),
+                        c.getTeam().getRegion(),
+                        c.getTeam().getRating()
+                )).toList();
+
+        return new MatchingListResponse(
+                matching.getMatchId(),
+                matching.getMatchRegion() != null ? matching.getMatchRegion() : "미정",
+                matching.getTeam().getTeamName(),
+                matching.getTeam().getTeamImg(),
+                matching.getTeam().getRegion(),
+                matching.getTeam().getRating(),
+                matching.getStadium() != null ? matching.getStadium().getStadiumName() : "미정",
+                matching.getMatchDate(),
+                matching.getMatchType().getDisplayName(),
+                matching.getLoan(),
+                challengerTeam,
+                challengerTeams
+        );
+    }
+
+
 }
 
