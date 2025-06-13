@@ -98,6 +98,13 @@ public class UsersController {
             Map<String, String> result = new HashMap<>();
             result.put("accessToken", jwtToken);
 
+            String tel = savedUser.getTel();
+            if (tel == null || tel.trim().isEmpty()) {
+                result.put("dataStatus", "moreData");
+            } else {
+                result.put("dataStatus", "success");
+            }
+
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("카카오 로그인 실패", e);
