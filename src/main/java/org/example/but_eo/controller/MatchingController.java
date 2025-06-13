@@ -165,7 +165,9 @@ public class MatchingController {
     @GetMapping("/my/latest-success")
     public ResponseEntity<MatchingListResponse> getLatestSuccessMatchByUser() {
         String userId = SecurityUtil.getCurrentUserId();
+        System.out.println(("[/my/latest-success] userId: {}"+ userId));
         MatchingListResponse result = matchingService.getLatestSuccessMatchByUser(userId);
+        System.out.println("result : "+ result);
         return ResponseEntity.ok(result);
     }
 
