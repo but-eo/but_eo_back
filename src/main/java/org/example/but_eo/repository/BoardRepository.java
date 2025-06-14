@@ -16,5 +16,7 @@ public interface BoardRepository extends JpaRepository<Board, String> {
 
     Optional<Board> findById(String boardId);
 
+    Page<Board> findByUser_UserHashIdAndState(String userHashId, Board.State state, Pageable pageable);
+
     void deleteAllByUser(Users user);
 }

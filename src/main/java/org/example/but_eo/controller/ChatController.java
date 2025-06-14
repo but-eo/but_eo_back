@@ -83,6 +83,7 @@ public class ChatController {
             message.setMessageId(UUID.randomUUID().toString());
             message.setNickName(chattingService.getNickName(userId));
             message.setCreatedAt(LocalDateTime.now().toString());
+            log.warn("메세지 등록 시간: " + LocalDateTime.now());
 
             redisChatService.saveMessageToRedis(message.getChat_id(), message);
             messagingTemplate.convertAndSend("/all/chat/" + message.getChat_id(), message);

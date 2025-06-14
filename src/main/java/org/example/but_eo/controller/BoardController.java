@@ -108,6 +108,15 @@ public class BoardController {
         return ResponseEntity.ok(liked);
     }
 
+    // 내가 쓴 게시글 목록 조회
+    @GetMapping("/my")
+    public ResponseEntity<?> getMyBoards(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        String userId = SecurityUtil.getCurrentUserId();
+        return ResponseEntity.ok(boardService.getBoardsByUser(userId, page, size));
+    }
 
     public class SecurityUtil {
         public static String getCurrentUserId() {

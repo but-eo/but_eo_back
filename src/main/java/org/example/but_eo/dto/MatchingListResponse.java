@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.example.but_eo.entity.Matching;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -23,5 +24,26 @@ public class MatchingListResponse {
     private LocalDateTime matchDate;
     private String matchType;
     private Boolean loan;
+    private ChallengerTeamResponse challengerTeam;
+    private List<ChallengerTeamResponse> challengerTeams;
+
+    @Override
+    public String toString() {
+        return "MatchingListResponse{" +
+                "matchId='" + matchId + '\'' +
+                ", matchRegion='" + matchRegion + '\'' +
+                ", teamName='" + teamName + '\'' +
+                ", teamImg='" + teamImg + '\'' +
+                ", teamRegion='" + teamRegion + '\'' +
+                ", teamRating=" + teamRating +
+                ", stadiumName='" + stadiumName + '\'' +
+                ", matchDate=" + matchDate +
+                ", matchType='" + matchType + '\'' +
+                ", loan=" + loan +
+                ", challengerTeam=" + challengerTeam +
+                ", challengerTeams=" + challengerTeams +
+                '}';
+    }
+
 }
 
