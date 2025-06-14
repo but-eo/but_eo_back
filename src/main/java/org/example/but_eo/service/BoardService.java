@@ -82,13 +82,20 @@ public class BoardService {
 
     }
 
-
+    // 페이징 조회
     public Map<String, Object> getBoardsWithPaging(Board.Event event, Board.Category category, int page, int size, String userId) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Board> boards = boardRepository.findByEventAndCategoryAndState(event, category, Board.State.PUBLIC, pageable);
 
         List<BoardResponse> content = boards.stream().map(board -> {
+            // === 로그 찍기 시작 ===
+            System.out.println("[isLiked 체크] userId(SecurityUtil): " + userId);
+            System.out.println("[isLiked 체크] boardId: " + board.getBoardId());
+
             boolean isLiked = boardLikeRepository.existsByUser_UserHashIdAndBoard_BoardId(userId, board.getBoardId());
+
+            System.out.println("[isLiked 체크] 결과: " + isLiked);
+
             return new BoardResponse(
                     board.getBoardId(),
                     board.getTitle(),
@@ -246,7 +253,14 @@ public class BoardService {
         Page<Board> boards = boardRepository.findByUser_UserHashIdAndState(userId, Board.State.PUBLIC, pageable);
 
         List<BoardResponse> content = boards.stream().map(board -> {
+            // === 로그 찍기 시작 ===
+            System.out.println("[isLiked 체크] userId(SecurityUtil): " + userId);
+            System.out.println("[isLiked 체크] boardId: " + board.getBoardId());
+
             boolean isLiked = boardLikeRepository.existsByUser_UserHashIdAndBoard_BoardId(userId, board.getBoardId());
+
+            System.out.println("[isLiked 체크] 결과: " + isLiked);
+
             return new BoardResponse(
                     board.getBoardId(),
                     board.getTitle(),
