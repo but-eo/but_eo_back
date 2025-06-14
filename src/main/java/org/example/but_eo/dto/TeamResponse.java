@@ -35,6 +35,8 @@ public class TeamResponse {
     private int drawCount;
     private int totalReview;
 
+    private double avgReviewRating;
+
     private List<MemberDto> members;
     private List<String> matchIds;
 
