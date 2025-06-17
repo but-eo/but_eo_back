@@ -187,7 +187,7 @@ public class TeamService {
             response.setMyJoinStatus("NONE");
         }
 
-        // ⭐⭐ 평균 리뷰 평점 계산 후 세팅
+        // 평균 리뷰 평점 계산 후 세팅
         int totalReview = team.getTotalReview() == 0 ? 0 : team.getTotalReview();
         int reviewCount = reviewRepository.countByTargetTeam_TeamId(teamId); // repository에서 count 쿼리 필요!
         double avg = (reviewCount == 0) ? 0.0 : ((double) totalReview / reviewCount);
