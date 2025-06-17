@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -82,8 +84,10 @@ public class ChatController {
             message.setSender(userId);
             message.setMessageId(UUID.randomUUID().toString());
             message.setNickName(chattingService.getNickName(userId));
-            message.setCreatedAt(LocalDateTime.now().toString());
-            log.warn("메세지 등록 시간: " + LocalDateTime.now());
+            ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
+            LocalDateTime now = zonedDateTime.toLocalDateTime();
+            message.setCreatedAt(now.toString());
+            log.warn("메세지 등록 시간: " + now);
 
             redisChatService.saveMessageToRedis(message.getChat_id(), message);
             messagingTemplate.convertAndSend("/all/chat/" + message.getChat_id(), message);

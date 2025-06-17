@@ -56,7 +56,7 @@ public class Matching {
     private String matchRegion;
 
     @Column(length = 30, nullable = true)
-    private String teamRegion;
+    private String teamRegion; // 팀에서 떙겨와야함 차후 제거 예정
 
     public enum Match_Type {
         SOCCER("축구"),
