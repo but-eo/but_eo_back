@@ -285,4 +285,26 @@ public class BoardService {
         return response;
     }
 
+    // 최근 5개
+    public List<BoardResponse> getLatestBoardsForHome(String userId) {
+        List<Board> boards = boardRepository.findTop5ByStateOrderByCreatedAtDesc(Board.State.PUBLIC);
+
+        return boards.stream().map(board -> {
+            boolean isLiked = boardLikeRepository.existsByUser_UserHashIdAndBoard_BoardId(userId, board.getBoardId());
+            return new BoardResponse(
+                    board.getBoardId(),
+                    board.getTitle(),
+                    board.getUser().getUserHashId(),
+                    board.getUser().getName(),
+                    board.getCategory(),
+                    board.getEvent(),
+                    board.getCommentCount(),
+                    board.getLikeCount(),
+                    board.getCreatedAt(),
+                    isLiked
+            );
+        }).toList();
+    }
+
+
 }

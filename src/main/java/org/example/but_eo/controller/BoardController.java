@@ -118,6 +118,15 @@ public class BoardController {
         return ResponseEntity.ok(boardService.getBoardsByUser(userId, page, size));
     }
 
+    // 홈화면 최신 게시글 조회
+    @GetMapping("/latest")
+    public ResponseEntity<List<BoardResponse>> getLatestBoards() {
+        String userId = SecurityUtil.getCurrentUserId();
+        List<BoardResponse> latestBoards = boardService.getLatestBoardsForHome(userId);
+        return ResponseEntity.ok(latestBoards);
+    }
+
+
     public class SecurityUtil {
         public static String getCurrentUserId() {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
