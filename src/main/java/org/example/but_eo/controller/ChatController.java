@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.but_eo.dto.ChatMember;
-import org.example.but_eo.dto.ChatMessage;
-import org.example.but_eo.dto.ChattingDTO;
-import org.example.but_eo.dto.CreateChatRoomRequest;
+import org.example.but_eo.dto.*;
 import org.example.but_eo.entity.Chatting;
 import org.example.but_eo.service.ChattingMessageService;
 import org.example.but_eo.service.ChattingService;
@@ -134,12 +131,13 @@ public class ChatController {
 
 
     @PostMapping("/chatrooms")
-    public ResponseEntity<Chatting> createChatRoom(@RequestBody CreateChatRoomRequest request, Authentication authentication) {
+    public ResponseEntity<ChatCreateDTO> createChatRoom(@RequestBody CreateChatRoomRequest request, Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
         request.getUserHashId().add(userId);
         Chatting chatRoom = chattingService.createChatRoom(request.getUserHashId(), request.getChatRoomName());
+        ChatCreateDTO chatCreateDTO = new ChatCreateDTO(chatRoom.getChatId());
         //TODO : 채팅방 아이디도 전송
-        return ResponseEntity.ok(chatRoom);
+        return ResponseEntity.ok(chatCreateDTO);
     }
 
     //유저 아이디 -> 채팅방 조회
