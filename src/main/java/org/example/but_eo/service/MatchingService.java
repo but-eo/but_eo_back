@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -426,46 +427,58 @@ public class MatchingService {
 
     // 팀 ID로 매치 리스트 조회 (페이징X 버전)
     public List<MatchingListResponse> getMatchingsByTeamId(String teamId) {
-        List<Matching> matchings = matchingRepository.findByTeam_TeamId(teamId);
-        return matchings.stream()
-                .map(m -> {
-                    // 1. 수락된 팀
-                    ChallengerTeamResponse challengerTeam = null;
-                    if (m.getChallengerTeam() != null) {
-                        Team challenger = m.getChallengerTeam();
-                        challengerTeam = new ChallengerTeamResponse(
-                                challenger.getTeamId(),
-                                challenger.getTeamName(),
-                                challenger.getRegion(),
-                                challenger.getRating()
-                        );
-                    }
-                    // 2. 신청 들어온 팀 전체
-                    List<ChallengerList> challengers = challengerListRepository.findByMatching_MatchId(m.getMatchId());
-                    List<ChallengerTeamResponse> challengerTeams = challengers.stream()
-                            .map(c -> new ChallengerTeamResponse(
-                                    c.getTeam().getTeamId(),
-                                    c.getTeam().getTeamName(),
-                                    c.getTeam().getRegion(),
-                                    c.getTeam().getRating()
-                            )).toList();
+        // 1. 호스트 매치
+        List<Matching> hostMatches = matchingRepository.findByTeam_TeamId(teamId);
 
-                    return new MatchingListResponse(
-                            m.getMatchId(),
-                            m.getMatchRegion() != null ? m.getMatchRegion() : "미정",
-                            m.getTeam().getTeamName(),
-                            m.getTeam().getTeamImg(),
-                            m.getTeam().getRegion(),
-                            m.getTeam().getRating(),
-                            m.getStadium() != null ? m.getStadium().getStadiumName() : "미정",
-                            m.getMatchDate(),
-                            m.getMatchType().getDisplayName(),
-                            m.getLoan(),
-                            challengerTeam,
-                            challengerTeams
-                    );
-                })
+        // 2. 도전자 매치
+        List<Matching> challengerMatches = matchingRepository.findByChallengerTeam_TeamId(teamId);
+
+        // 3. 중복 제거 및 합치기
+        Set<Matching> allMatches = new java.util.HashSet<>();
+        allMatches.addAll(hostMatches);
+        allMatches.addAll(challengerMatches);
+
+        // 4. 날짜 내림차순(최신순) 정렬
+        List<Matching> sorted = allMatches.stream()
+                .sorted(java.util.Comparator.comparing(Matching::getMatchDate).reversed())
                 .toList();
+
+        // 5. DTO 매핑(기존 방식)
+        return sorted.stream().map(m -> {
+            ChallengerTeamResponse challengerTeam = null;
+            if (m.getChallengerTeam() != null) {
+                Team challenger = m.getChallengerTeam();
+                challengerTeam = new ChallengerTeamResponse(
+                        challenger.getTeamId(),
+                        challenger.getTeamName(),
+                        challenger.getRegion(),
+                        challenger.getRating()
+                );
+            }
+            List<ChallengerList> challengers = challengerListRepository.findByMatching_MatchId(m.getMatchId());
+            List<ChallengerTeamResponse> challengerTeams = challengers.stream()
+                    .map(c -> new ChallengerTeamResponse(
+                            c.getTeam().getTeamId(),
+                            c.getTeam().getTeamName(),
+                            c.getTeam().getRegion(),
+                            c.getTeam().getRating()
+                    )).toList();
+
+            return new MatchingListResponse(
+                    m.getMatchId(),
+                    m.getMatchRegion() != null ? m.getMatchRegion() : "미정",
+                    m.getTeam().getTeamName(),
+                    m.getTeam().getTeamImg(),
+                    m.getTeam().getRegion(),
+                    m.getTeam().getRating(),
+                    m.getStadium() != null ? m.getStadium().getStadiumName() : "미정",
+                    m.getMatchDate(),
+                    m.getMatchType().getDisplayName(),
+                    m.getLoan(),
+                    challengerTeam,
+                    challengerTeams
+            );
+        }).toList();
     }
 
 

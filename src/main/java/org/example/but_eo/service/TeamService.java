@@ -6,10 +6,7 @@ import org.example.but_eo.dto.TeamJoinRequestDto;
 import org.example.but_eo.dto.TeamResponse;
 import org.example.but_eo.dto.UpdateTeamRequest;
 import org.example.but_eo.entity.*;
-import org.example.but_eo.repository.TeamInvitationRepository;
-import org.example.but_eo.repository.TeamMemberRepository;
-import org.example.but_eo.repository.TeamRepository;
-import org.example.but_eo.repository.UsersRepository;
+import org.example.but_eo.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +27,7 @@ public class TeamService {
     private final UsersRepository usersRepository;
     private final TeamMemberRepository teamMemberRepository;
     private final TeamInvitationRepository teamInvitationRepository;
+    private final ReviewRepository reviewRepository;
 
     private final Set<Team.Event> soloCompatibleEvents = Set.of(
             Team.Event.BADMINTON,
@@ -74,6 +72,7 @@ public class TeamService {
         team.setWinCount(0);
         team.setLoseCount(0);
         team.setDrawCount(0);
+        team.setTotalReview(0);
         team.setTeamType(Team.Team_Type.TEAM);
 
         teamRepository.save(team);
@@ -187,6 +186,14 @@ public class TeamService {
         } else {
             response.setMyJoinStatus("NONE");
         }
+
+        // ⭐⭐ 평균 리뷰 평점 계산 후 세팅
+        int totalReview = team.getTotalReview() == 0 ? 0 : team.getTotalReview();
+        int reviewCount = reviewRepository.countByTargetTeam_TeamId(teamId); // repository에서 count 쿼리 필요!
+        double avg = (reviewCount == 0) ? 0.0 : ((double) totalReview / reviewCount);
+
+        response.setAvgReviewRating(Math.round(avg * 100) / 100.0); // 소수점 둘째자리
+
         return response;
     }
 
