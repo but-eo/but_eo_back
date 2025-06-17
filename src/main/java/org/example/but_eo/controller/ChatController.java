@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -40,38 +42,39 @@ public class ChatController {
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
 
-    @MessageMapping("chat/enter") // 현재 세팅의 경우 클라이언트에서 보낼 때 /app/chat/message -> 클라이언트가 채팅을 보낼때 입장이나 등등
-    public void enter(@Payload ChatMessage message) {
-        message.setMessageId(UUID.randomUUID().toString());
-        message.setCreatedAt(LocalDateTime.now().toString());
-
-        if (message.getType() == ChatMessage.MessageType.ENTER) { // 메세지 타입이 입장일 경우
-            message.setMessage(message.getSender() + "님이 입장하셨습니다"); // 개발 단계에서만 보이게끔
-
-            // 🔽 과거 메시지 조회
-//            List<ChatMessage> history = redisChatService.getRecentMessages(message.getRoomId());
-
-            List<ChatMessage> history = new ArrayList<>();
-
-            history.addAll(chattingMessageService.findByMessages(message.getMessageId()));
-            history.addAll(redisChatService.getRecentMessages(message.getChat_id()));
-
-            //convertAndSendToUser
-            messagingTemplate.convertAndSendToUser(
-                    message.getSender(), // Flutter에서 sender를 유저 고유값으로 설정
-                    "/all/chatroom/" + message.getChat_id(),    // 클라이언트가 구독할 주소
-                    history
-            );
-
-        } else if (message.getType() == ChatMessage.MessageType.EXIT) { // 메세지 타입이 퇴장일 경우
-            message.setMessage(message.getSender() + "님이 퇴장하셨습니다"); // 개발 단계에서만 보이게끔
-        }
-
-        redisChatService.saveMessageToRedis(message.getChat_id(), message);
-//        System.out.println("전송 메시지 : " + message);
-
-        messagingTemplate.convertAndSend("/all/chat/" + message.getChat_id(), message); //클라이언트가 메세지를 받을때
-    }
+//    현재 사용 안하는 걸로 확인
+//    @MessageMapping("chat/enter") // 현재 세팅의 경우 클라이언트에서 보낼 때 /app/chat/message -> 클라이언트가 채팅을 보낼때 입장이나 등등
+//    public void enter(@Payload ChatMessage message) {
+//        message.setMessageId(UUID.randomUUID().toString());
+//        message.setCreatedAt(LocalDateTime.now().toString());
+//
+//        if (message.getType() == ChatMessage.MessageType.ENTER) { // 메세지 타입이 입장일 경우
+//            message.setMessage(message.getSender() + "님이 입장하셨습니다"); // 개발 단계에서만 보이게끔
+//
+//            // 🔽 과거 메시지 조회
+////            List<ChatMessage> history = redisChatService.getRecentMessages(message.getRoomId());
+//
+//            List<ChatMessage> history = new ArrayList<>();
+//
+//            history.addAll(chattingMessageService.findByMessages(message.getMessageId()));
+//            history.addAll(redisChatService.getRecentMessages(message.getChat_id()));
+//
+//            //convertAndSendToUser
+//            messagingTemplate.convertAndSendToUser(
+//                    message.getSender(), // Flutter에서 sender를 유저 고유값으로 설정
+//                    "/all/chatroom/" + message.getChat_id(),    // 클라이언트가 구독할 주소
+//                    history
+//            );
+//
+//        } else if (message.getType() == ChatMessage.MessageType.EXIT) { // 메세지 타입이 퇴장일 경우
+//            message.setMessage(message.getSender() + "님이 퇴장하셨습니다"); // 개발 단계에서만 보이게끔
+//        }
+//
+//        redisChatService.saveMessageToRedis(message.getChat_id(), message);
+////        System.out.println("전송 메시지 : " + message);
+//
+//        messagingTemplate.convertAndSend("/all/chat/" + message.getChat_id(), message); //클라이언트가 메세지를 받을때
+//    }
 
     @MessageMapping("/chat/message")
     public void message(@Payload ChatMessage message, Principal principal) {
@@ -82,8 +85,10 @@ public class ChatController {
             message.setSender(userId);
             message.setMessageId(UUID.randomUUID().toString());
             message.setNickName(chattingService.getNickName(userId));
-            message.setCreatedAt(LocalDateTime.now().toString());
-            log.warn("메세지 등록 시간: " + LocalDateTime.now());
+            ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
+            LocalDateTime now = zonedDateTime.toLocalDateTime();
+            message.setCreatedAt(now.toString());
+            log.warn("메세지 등록 시간: " + now);
 
             redisChatService.saveMessageToRedis(message.getChat_id(), message);
             messagingTemplate.convertAndSend("/all/chat/" + message.getChat_id(), message);
