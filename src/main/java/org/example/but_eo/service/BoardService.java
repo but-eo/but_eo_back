@@ -88,7 +88,7 @@ public class BoardService {
         Page<Board> boards = boardRepository.findByEventAndCategoryAndState(event, category, Board.State.PUBLIC, pageable);
 
         List<BoardResponse> content = boards.stream().map(board -> {
-            // === 로그 찍기 시작 ===
+            //로그 찍기 시작
             System.out.println("[isLiked 체크] userId(SecurityUtil): " + userId);
             System.out.println("[isLiked 체크] boardId: " + board.getBoardId());
 
@@ -284,5 +284,27 @@ public class BoardService {
 
         return response;
     }
+
+    // 최근 5개
+    public List<BoardResponse> getLatestBoardsForHome(String userId) {
+        List<Board> boards = boardRepository.findTop5ByStateOrderByCreatedAtDesc(Board.State.PUBLIC);
+
+        return boards.stream().map(board -> {
+            boolean isLiked = boardLikeRepository.existsByUser_UserHashIdAndBoard_BoardId(userId, board.getBoardId());
+            return new BoardResponse(
+                    board.getBoardId(),
+                    board.getTitle(),
+                    board.getUser().getUserHashId(),
+                    board.getUser().getName(),
+                    board.getCategory(),
+                    board.getEvent(),
+                    board.getCommentCount(),
+                    board.getLikeCount(),
+                    board.getCreatedAt(),
+                    isLiked
+            );
+        }).toList();
+    }
+
 
 }
