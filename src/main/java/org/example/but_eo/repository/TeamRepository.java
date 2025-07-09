@@ -26,4 +26,13 @@ public interface TeamRepository extends JpaRepository<Team, String> {
 
     // 단일 조회 ACTIVE만
     Optional<Team> findWithMembersByTeamIdAndState(String teamId, Team.State state);
+
+    @Query("""
+    SELECT t.teamId
+    FROM Team t
+    JOIN TeamMember tm ON t.teamId = tm.team.teamId
+    WHERE tm.user.userHashId = :userId
+      AND t.event = :sportType
+    """)
+    String findTeamIdByUserIdAndSportType(@Param("userId") String userId, @Param("sportType") String sportType);
 }
