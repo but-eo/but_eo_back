@@ -53,5 +53,6 @@ public interface MatchingRepository extends JpaRepository<Matching, String> {
     List<Matching> findByTeam_TeamIdIn(List<String> teamIds);
     List<Matching> findByChallengerTeam_TeamIdIn(List<String> teamIds);
     List<Matching> findByChallengerTeam_TeamId(String teamId);
+    Matching findByMatchId(String matchId);
 }
 

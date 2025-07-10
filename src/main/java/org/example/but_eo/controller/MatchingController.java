@@ -1,6 +1,8 @@
 package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.angus.mail.iap.Response;
 import org.example.but_eo.dto.*;
 import org.example.but_eo.entity.Matching;
 import org.example.but_eo.service.MatchingService;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/matchings")
@@ -181,5 +184,28 @@ public class MatchingController {
         }
     }
 
+    @PostMapping("/auto")
+    public ResponseEntity<?> requestAutoMatch(@RequestBody RequestAutoMatch requestAutoMatch, Authentication authentication) {
+        String userId = authentication.getPrincipal().toString();
+        if(matchingService.requestAutoMatch(userId, requestAutoMatch)) {
+            return ResponseEntity.ok("매칭 요청 완료");
+        } else {
+            log.warn("매칭 요청 실패");
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("auto/{matchId}/respond")
+    public ResponseEntity<?> respond(@PathVariable String matchId,
+                                     @RequestBody MatchResponseDto dto,
+                                     Authentication authentication) {
+        matchingService.handleMatchResponse(matchId, authentication.getPrincipal().toString(), dto.getResponse());
+        return ResponseEntity.ok("응답 완료");
+    }
+
+    @GetMapping("auto/{matchId}/status")
+    public ResponseEntity<MatchResultDto> status(@PathVariable String matchId) {
+        return ResponseEntity.ok(matchingService.getMatchStatus(matchId));
+    }
 }
 
