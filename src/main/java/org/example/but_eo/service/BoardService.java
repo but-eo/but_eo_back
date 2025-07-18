@@ -2,10 +2,7 @@ package org.example.but_eo.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.example.but_eo.dto.BoardDetailResponse;
-import org.example.but_eo.dto.BoardRequest;
-import org.example.but_eo.dto.BoardResponse;
-import org.example.but_eo.dto.CommentResponse;
+import org.example.but_eo.dto.*;
 import org.example.but_eo.entity.*;
 import org.example.but_eo.repository.*;
 import org.springframework.data.domain.Page;
@@ -122,6 +119,13 @@ public class BoardService {
 
 
 
+    //게시판 전체조회 및 필터(관리자 기능)
+    public Page<BoardAdminResponse> getBoards(String title, String userName, Pageable pageable) {
+        // 검색 조건에 맞게 Users.name 필드를 사용
+        Page<Board> boards = boardRepository.findByTitleContainingAndUser_NameContaining(title, userName, pageable);
+        return boards.map(BoardAdminResponse::from);
+    }
+
     // 상세 조회
     public BoardDetailResponse getBoardDetail(String boardId) {
         Board board = boardRepository.findById(boardId)
@@ -202,18 +206,14 @@ public class BoardService {
         boardRepository.save(board);
     }
 
-    // 게시글 완전 삭제 (Hard Delete)
+    // 게시글 완전 삭제 (Hard Delete) (관리자기능)
     @Transactional
-    public void deleteBoardHard(String boardId, String userId) {
+    public void adminDeleteBoard(String boardId) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
-
-        if (!board.getUser().getUserHashId().equals(userId)) {
-            throw new RuntimeException("작성자만 삭제할 수 있습니다.");
-        }
-
         commentRepository.deleteAllByBoard_BoardId(boardId);
         boardMappingRepository.deleteByBoard_BoardId(boardId);
+        boardLikeRepository.deleteAllByBoard_BoardId(boardId);
         boardRepository.delete(board);
     }
 
@@ -306,5 +306,14 @@ public class BoardService {
         }).toList();
     }
 
+
+    //게시판 상태 수정(관리자 기능)
+    public void updateBoardState(String boardId, Board.State newState) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+
+        board.setState(newState);
+        boardRepository.save(board);
+    }
 
 }

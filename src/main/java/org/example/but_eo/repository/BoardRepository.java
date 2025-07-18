@@ -23,4 +23,9 @@ public interface BoardRepository extends JpaRepository<Board, String> {
 
     void deleteAllByUser(Users user);
 
+    Page<Board> findByTitleContainingAndUser_NameContaining(String title, String name, Pageable pageable);
+
+
+
+
 }
