@@ -1,6 +1,7 @@
     package org.example.but_eo.service;
 
     import lombok.RequiredArgsConstructor;
+    import org.example.but_eo.component.MatchQueue;
     import org.example.but_eo.dto.*;
     import org.example.but_eo.entity.*;
     import org.example.but_eo.repository.*;
@@ -8,6 +9,7 @@
     import org.springframework.data.domain.PageRequest;
     import org.springframework.data.domain.Pageable;
     import org.springframework.data.domain.Sort;
+    import org.springframework.messaging.simp.SimpMessagingTemplate;
     import org.springframework.stereotype.Service;
     import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,8 @@
         private final MatchingRepository matchingRepository;
         private final TeamMemberRepository teamMemberRepository;
         private final ChallengerListRepository challengerListRepository;
+        private final MatchQueue matchQueue;
+        private final SimpMessagingTemplate simpMessagingTemplate;
 
         @Transactional
         public void createMatch(MatchCreateRequest request, String userId) {
@@ -804,13 +808,55 @@
                     selected.getLoan(),
                     challengerTeam,
                     challengerTeams
+
             );
 
             System.out.println("result : " + response);
             return response;
         }
 
+        public boolean requestAutoMatch(String userId, RequestAutoMatch requestAutoMatch) {
+            String teamId = teamRepository.findTeamIdByUserIdAndSportType(userId, requestAutoMatch.getSportType());
+            if (teamId == null) {
+                return false;
+            }
+            requestAutoMatch.setTeamId(teamId);
+            requestAutoMatch.setUserId(userId);
 
+            matchQueue.enqueue(requestAutoMatch);
+            return true;
+        }
 
+        public void handleMatchResponse(String matchId, String userId, MatchResponseDto.MatchResponseType response) {
+            Matching match = matchingRepository.findByMatchId(matchId);
+//            .orElseThrow(() -> new NotFoundException("매칭 없음"))
+
+            if (response == MatchResponseDto.MatchResponseType.REJECTED) {
+                match.setState(Matching.State.CANCEL);
+            } else {
+                match.setState(Matching.State.COMPLETE);
+            }
+
+            matchingRepository.save(match);
+
+            simpMessagingTemplate.convertAndSendToUser(
+                    userId, "/queue/match",
+                    new MatchResultDto(matchId, match.getState(),
+                                       userId.equals(match.getTeam().getTeamId()) ?
+                                       match.getChallengerTeam().getTeamName() :
+                                       match.getTeam().getTeamName())
+            );
+        }
+
+        public MatchResultDto getMatchStatus(String matchId) {
+            Matching match = matchingRepository.findByMatchId(matchId);
+//                    .orElseThrow(() -> new NotFoundException("매칭 없음"))
+
+            return new MatchResultDto(
+                    match.getMatchId(),
+                    match.getState(),
+                    match.getChallengerTeam() != null ? match.getChallengerTeam().getTeamName() : null
+            );
+        }
     }
 

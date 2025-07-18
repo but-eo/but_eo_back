@@ -9,6 +9,7 @@ import org.example.but_eo.dto.ChatMessage;
 import org.example.but_eo.dto.ChattingDTO;
 import org.example.but_eo.dto.CreateChatRoomRequest;
 import org.example.but_eo.entity.Chatting;
+import org.example.but_eo.entity.ChattingMember;
 import org.example.but_eo.service.ChattingMessageService;
 import org.example.but_eo.service.ChattingService;
 import org.example.but_eo.service.RedisChatService;
@@ -18,14 +19,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -42,7 +41,6 @@ public class ChatController {
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
 
-//    현재 사용 안하는 걸로 확인
 //    @MessageMapping("chat/enter") // 현재 세팅의 경우 클라이언트에서 보낼 때 /app/chat/message -> 클라이언트가 채팅을 보낼때 입장이나 등등
 //    public void enter(@Payload ChatMessage message) {
 //        message.setMessageId(UUID.randomUUID().toString());
@@ -85,10 +83,8 @@ public class ChatController {
             message.setSender(userId);
             message.setMessageId(UUID.randomUUID().toString());
             message.setNickName(chattingService.getNickName(userId));
-            ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
-            LocalDateTime now = zonedDateTime.toLocalDateTime();
-            message.setCreatedAt(now.toString());
-            log.warn("메세지 등록 시간: " + now);
+            message.setCreatedAt(LocalDateTime.now().toString());
+            log.warn("메세지 등록 시간: " + LocalDateTime.now());
 
             redisChatService.saveMessageToRedis(message.getChat_id(), message);
             messagingTemplate.convertAndSend("/all/chat/" + message.getChat_id(), message);
@@ -163,6 +159,20 @@ public class ChatController {
         }
         return ResponseEntity.ok(rooms);
     }
+
+//    @GetMapping("/allChatRooms")
+//    public ResponseEntity<?> allChatRooms() {
+//        List<ChattingMember> listRooms = chattingService.allChatRooms();
+//        System.out.println("list [" + listRooms + "]");
+//        return ResponseEntity.ok(listRooms);
+//    }
+    @GetMapping("/allChatRooms")
+    public ResponseEntity<List<ChattingDTO>> allChatRooms() { // 이 부분 정확해야 합니다.
+        List<ChattingDTO> rooms = chattingService.allChatRooms();
+        System.out.println("Loaded unique chat rooms for frontend (from controller)."); // 로그 변경
+        return ResponseEntity.ok(rooms);
+    }
+
 
     @PostMapping("/exit/ChatRoom/{roomId}")
     public ResponseEntity<Void> exitChatRoom(@PathVariable String roomId, Authentication authentication) {

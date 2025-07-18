@@ -11,10 +11,8 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -82,6 +80,31 @@ public class ChattingService {
 
         return ChattingDtoList;
     }
+
+    //전체 채팅방 조회
+//    public List<ChattingMember> allChatRooms() {
+//        List<ChattingMember> rooms = chattingMemberRepository.findAll();
+//        System.out.println(rooms);
+//        return rooms;
+//    }
+    public List<ChattingDTO> allChatRooms() {
+        Set<ChattingDTO> uniqueChatRoomsSet = chattingMemberRepository.findAll().stream()
+                .map(ChattingMember::getChatting) // ChattingMember에서 Chatting 엔티티 추출
+                .filter(chatting -> chatting != null) // null 값 방지
+                .map(chatting -> new ChattingDTO( // ChattingDTO로 변환
+                        chatting.getChatId(),
+                        chatting.getTitle(),
+                        null,
+                        null
+                ))
+                .collect(Collectors.toSet()); // Set으로 수집하여 중복 제거
+
+        List<ChattingDTO> uniqueChatRoomsList = new ArrayList<>(uniqueChatRoomsSet);
+
+        System.out.println("Unique Chat Rooms Count (from service): " + uniqueChatRoomsList.size()); // 로그 변경
+        return uniqueChatRoomsList;
+    }
+
 
     private String LastMessageTimeFormat(LocalDateTime lastMessageTime) {
         if (lastMessageTime == null) return null;
