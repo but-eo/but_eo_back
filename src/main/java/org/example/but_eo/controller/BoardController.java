@@ -1,11 +1,16 @@
 package org.example.but_eo.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.but_eo.dto.BoardAdminResponse;
 import org.example.but_eo.dto.BoardDetailResponse;
 import org.example.but_eo.dto.BoardRequest;
 import org.example.but_eo.dto.BoardResponse;
 import org.example.but_eo.entity.Board;
 import org.example.but_eo.service.BoardService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +52,8 @@ public class BoardController {
     }
     */
 
+
+
     @GetMapping
     public ResponseEntity<?> getBoards(
             @RequestParam Board.Event event,
@@ -58,6 +65,15 @@ public class BoardController {
         return ResponseEntity.ok(boardService.getBoardsWithPaging(event, category, page, size, userId));
     }
 
+    //게시판 전체조회(관리자 기능)
+    @GetMapping("/all")
+    public ResponseEntity<Page<BoardAdminResponse>> getBoards(
+            @RequestParam(defaultValue = "") String title,
+            @RequestParam(defaultValue = "") String userName,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<BoardAdminResponse> result = boardService.getBoards(title, userName, pageable);
+        return ResponseEntity.ok(result);
+    }
 
     //게시판 상세조회
     @GetMapping("/{boardId}")
@@ -86,10 +102,9 @@ public class BoardController {
 
     // 게시글 완전 삭제
     @DeleteMapping("/{boardId}/hard")
-    public ResponseEntity<?> deleteBoardHard(@PathVariable String boardId) {
-        String userId = SecurityUtil.getCurrentUserId();
-        boardService.deleteBoardHard(boardId, userId);
-        return ResponseEntity.ok("게시글 완전 삭제 완료");
+    public ResponseEntity<?> adminDeleteBoard(@PathVariable String boardId) {
+        boardService.adminDeleteBoard(boardId);
+        return ResponseEntity.ok("관리자 삭제 완료");
     }
 
     // 좋아요 기능
@@ -136,6 +151,18 @@ public class BoardController {
             return authentication.getName(); // 또는 JWT claim 기반으로 userId 추출
         }
     }
+
+    //게시글 상태 수정(관리자 기능)
+    @PatchMapping("/{boardId}/state")
+    public ResponseEntity<?> updateBoardState(
+            @PathVariable String boardId,
+            @RequestParam Board.State newState) {
+
+        boardService.updateBoardState(boardId, newState);
+        return ResponseEntity.ok("상태 변경 성공");
+    }
+
+
 
 }
 
