@@ -9,9 +9,11 @@ import org.example.but_eo.service.UsersService;
 import org.example.but_eo.util.JwtUtil;
 import org.example.but_eo.repository.UsersRepository;
 import org.example.but_eo.util.VerificationStore;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -283,5 +285,25 @@ public class UsersController {
         } else {
             return ResponseEntity.badRequest().body("인증 실패");
         }
+    }
+
+
+
+    @GetMapping("/admin/list")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<Map<String, Object>> getUsersForAdmin(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<UserInfoResponseDto> usersPage = usersService.getUsersWithPagingAndFilter(keyword, page, size);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("users", usersPage.getContent());
+        response.put("currentPage", usersPage.getNumber());
+        response.put("totalItems", usersPage.getTotalElements());
+        response.put("totalPages", usersPage.getTotalPages());
+
+        return ResponseEntity.ok(response);
     }
 }

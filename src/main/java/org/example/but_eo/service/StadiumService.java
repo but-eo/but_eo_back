@@ -58,6 +58,8 @@ public class StadiumService {
         stadium.setOwner(user);
         stadiumRepository.save(stadium);
 
+        System.out.println("✅ Stadium 등록 요청 수신");
+        System.out.println("✅ 받은 이미지 수: " + (req.getImageFiles() == null ? "null" : req.getImageFiles().size()));
         saveImages(req.getImageFiles(), stadium, user);
     }
 
@@ -167,6 +169,12 @@ public class StadiumService {
                 );
                 stadiumMappingRepository.save(mapping);
                 stadium.getStadiumMappingList().add(mapping);
+
+                System.out.println("✅ 이미지 매핑 저장 완료: " + file.getFilePath());
+                System.out.println("✅ stadiumId: " + stadium.getStadiumId());
+                System.out.println("✅ mapping 저장 여부: " + stadium.getStadiumMappingList().size());
+
+
 
             } catch (IOException e) {
                 System.err.println("이미지 저장 실패");

@@ -9,11 +9,16 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.but_eo.dto.*;
 import org.example.but_eo.entity.TeamMember;
 import org.example.but_eo.entity.Users;
 import org.example.but_eo.repository.*;
 import org.example.but_eo.util.JwtUtil;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
@@ -24,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UsersService {
@@ -291,5 +297,21 @@ public class UsersService {
                 break;
         }
         usersRepository.save(user);
+    }
+
+
+    public Page<UserInfoResponseDto> getUsersWithPagingAndFilter(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        Page<Users> usersPage;
+
+        if (keyword == null || keyword.isBlank()) {
+            usersPage = usersRepository.findAll(pageable);
+        } else {
+            usersPage = usersRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        }
+        log.info("조회된 유저 수: {}", usersPage.getNumberOfElements());
+
+        return usersPage.map(this::convertToDto);
     }
 }
