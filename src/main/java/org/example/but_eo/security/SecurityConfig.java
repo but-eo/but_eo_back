@@ -81,7 +81,7 @@ public class SecurityConfig {
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH")); //허용할 HTTP 메소드
         config.setAllowedHeaders(List.of("Authorization", "Content-Type")); //허용할 헤더
         config.setAllowCredentials(true); //인증 정보 포함 허용
-
+        //수정
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
