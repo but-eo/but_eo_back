@@ -114,7 +114,6 @@ public class UsersController {
         }
     }
 
-    // ⭐ [수정] 항상 JSON 리턴
     @GetMapping("/my-info")
     public ResponseEntity<?> myInfo(Authentication authentication) {
         try {
@@ -162,7 +161,6 @@ public class UsersController {
                     .body("회원정보 수정 중 오류: " + e.getMessage());
         }
     }
-
 
     @DeleteMapping("/delete")
     public ResponseEntity<String> deleteUser(Authentication authentication) {
@@ -287,8 +285,6 @@ public class UsersController {
         }
     }
 
-
-
     @GetMapping("/admin/list")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Map<String, Object>> getUsersForAdmin(
@@ -305,5 +301,59 @@ public class UsersController {
         response.put("totalPages", usersPage.getTotalPages());
 
         return ResponseEntity.ok(response);
+    }
+
+    //관리자 유저 정보 변경
+    @PatchMapping(value = "/admin/update/{userHashId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE) //멀티 폼 데이터 처리
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> updateUserByAdmin(
+            @PathVariable String userHashId,
+            @ModelAttribute UserUpdateRequestDto request) {
+        try {
+            usersService.updateUserByAdmin(userHashId, request);
+            return ResponseEntity.ok("관리자 : 유저(" + userHashId + ") 정보 수정 완료");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error("관리자 : 유저 정보 수정 실패 : {}", userHashId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("관리자 : 유저 정보 수정 중 오류" + e.getMessage());
+        }
+    }
+
+    //관리자 유저 계정 삭제
+    @DeleteMapping("/admin/delete/{userHashId}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<String> deleteUserByAdmin(@PathVariable String userHashId) {
+        try {
+            usersService.deleteUserByAdmin(userHashId);
+            return ResponseEntity.ok("관리자: 유저(" + userHashId + ") 논리적 삭제 완료");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            // 팀 리더 계정 삭제 시도 등 비즈니스 로직 제약 위반
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("관리자: 유저 논리적 삭제 실패: {}", userHashId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("관리자: 유저 논리적 삭제 중 오류 발생: " + e.getMessage());
+        }
+    }
+
+    // 관리자 유저 계정 영구 삭제 (하드 삭제)
+    @DeleteMapping("/admin/permanent/{userHashId}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> deleteUserPermanentlyByAdmin(@PathVariable String userHashId) {
+        try {
+            usersService.deleteUserPermanentlyByAdmin(userHashId);
+            return ResponseEntity.ok("관리자: 유저(" + userHashId + ") 계정이 완전히 삭제되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            // 삭제 대기 상태가 아닌 계정의 영구 삭제 시도 등 비즈니스 로직 제약 위반 (옵션)
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("관리자: 유저 영구 삭제 실패: {}", userHashId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("관리자: 유저 영구 삭제 중 오류 발생: " + e.getMessage());
+        }
     }
 }
