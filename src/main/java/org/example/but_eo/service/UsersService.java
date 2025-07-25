@@ -32,6 +32,7 @@ import java.security.NoSuchAlgorithmException;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UsersService {
 
     private final UsersRepository usersRepository;
@@ -85,7 +86,7 @@ public class UsersService {
             user.setBusinessNumber(dto.getBusinessNumber());
         }
         if (user.getLoginType() == Users.LoginType.BUTEO) {
-            user.setProfile("/uploads/profiles/DefaultProfileImage.png"); // 기본 프로필 경로
+            user.setProfile("/uploads/profiles/DefaultProfileImage.png");
         }
 
         usersRepository.save(user);
@@ -93,7 +94,7 @@ public class UsersService {
         System.out.println(user.getEmail() + " 로 회원가입 성공 (division=" + division + ")");
     }
 
-    // 이메일 해시값 생성 (userHashId)
+    // 이메일 해시값 생성
     private String generateUserHash(String email) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -155,6 +156,31 @@ public class UsersService {
         usersRepository.save(user);
     }
 
+    // 관리자 유저 정보 수정
+    @Transactional
+    public void updateUserByAdmin(String userHashId, UserUpdateRequestDto dto) {
+        Users user = usersRepository.findByUserHashId(userHashId);
+        if (user == null) throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
+
+        if (dto.getName() != null) user.setName(dto.getName());
+        if (dto.getRegion() != null) user.setRegion(dto.getRegion());
+        if (dto.getPreferSports() != null) user.setPreferSports(dto.getPreferSports());
+        if (dto.getTel() != null) user.setTel(dto.getTel());
+        if (dto.getGender() != null) user.setGender(dto.getGender());
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
+
+        MultipartFile profileFile = dto.getProfile();
+        if (profileFile != null && !profileFile.isEmpty()) {
+            String newProfileUrl = saveProfileImage(profileFile);
+            user.setProfile(newProfileUrl);
+        }
+
+        usersRepository.save(user);
+        log.info("관리자: 유저({}) 정보 수정 완료", userHashId);
+    }
+
     // 프로필 이미지 저장
     private String saveProfileImage(MultipartFile file) {
         validateImageFile(file);
@@ -172,7 +198,7 @@ public class UsersService {
         }
     }
 
-    // 이미지 파일 검증 (빈 파일/미전송시 통과, 진짜 이미지일 때만 검사)
+    // 이미지 파일 검증
     private void validateImageFile(MultipartFile file) {
         if (file == null || file.isEmpty()) return;
         String contentType = file.getContentType();
@@ -191,28 +217,17 @@ public class UsersService {
         Users user = usersRepository.findByUserHashId(userId);
         if (user == null) throw new IllegalArgumentException("해당 유저를 찾을 수 없습니다.");
 
-        // 팀 리더인지 확인
+        if (user.getDivision() == Users.Division.ADMIN) {
+            throw new IllegalStateException("관리자 계정은 이 경로로 탈퇴할 수 없습니다. 관리자용 삭제 기능을 사용하세요.");
+        }
+
         List<TeamMember> memberList = teamMemberRepository.findAllByUser(user);
         for (TeamMember member : memberList) {
             if (member.getType() == TeamMember.Type.LEADER) {
                 throw new IllegalStateException("팀 리더는 계정을 삭제할 수 없습니다. 리더 위임 후 진행해주세요.");
             }
         }
-        // 팀 멤버 삭제
-        teamMemberRepository.deleteAllByUser(user);
-        // 댓글 삭제
-        commentRepository.deleteAllByUser(user);
-        // 게시글 삭제
-        boardRepository.deleteAllByUser(user);
-        // 채팅 멤버 삭제
-        chattingMemberRepository.deleteAllByUser(user);
-        // 알림 (보낸/받은) 삭제
-        notificationRepository.deleteAllByReceiverUser(user);
-        notificationRepository.deleteAllBySenderUser(user);
-        // 파일 삭제 (파일 엔티티가 사용자와 연관돼 있을 경우)
-        fileRepository.deleteAllByUserHashId(user);
-        // 받은 초대 전부 삭제
-        teamInvitationRepository.deleteAllByUser(user);
+        deleteRelatedUserData(user);
 
         user.setState(Users.State.DELETED_WAIT);
         usersRepository.save(user);
@@ -228,8 +243,59 @@ public class UsersService {
         if (user.getState() != Users.State.DELETED_WAIT) {
             throw new IllegalStateException("삭제 대기 상태인 유저만 완전 삭제할 수 있습니다.");
         }
+        if (user.getDivision() == Users.Division.ADMIN) {
+            throw new IllegalStateException("관리자 계정은 이 경로로 영구 삭제할 수 없습니다. 관리자용 영구 삭제 기능을 사용하세요.");
+        }
+        deleteRelatedUserData(user);
         usersRepository.delete(user);
         System.out.println("유저 완전 삭제 완료: " + user.getEmail());
+    }
+
+    // 관리자 유저 계정 논리적 삭제
+    @Transactional
+    public void deleteUserByAdmin(String userHashId) {
+        Users user = usersRepository.findByUserHashId(userHashId);
+        if (user == null) throw new IllegalArgumentException("해당 유저를 찾을 수 없습니다.");
+
+        if (user.getDivision() == Users.Division.ADMIN) {
+            throw new IllegalStateException("관리자 계정은 이 경로로 논리적으로 삭제할 수 없습니다. (영구 삭제만 가능)");
+        }
+
+        List<TeamMember> memberList = teamMemberRepository.findAllByUser(user);
+        for (TeamMember member : memberList) {
+            if (member.getType() == TeamMember.Type.LEADER) {
+                throw new IllegalStateException("해당 유저는 현재 팀 리더입니다. 리더 위임 후 삭제를 진행하거나 영구 삭제를 고려해주세요.");
+            }
+        }
+        deleteRelatedUserData(user);
+
+        user.setState(Users.State.DELETED_WAIT);
+        usersRepository.save(user);
+        log.info("관리자: 유저({}) 논리적 삭제 처리됨.", userHashId);
+    }
+
+    // 관리자 유저 계정 영구 삭제 (하드 삭제)
+    @Transactional
+    public void deleteUserPermanentlyByAdmin(String userHashId) {
+        Users user = usersRepository.findByUserHashId(userHashId);
+        if (user == null) throw new IllegalArgumentException("해당 유저가 존재하지 않습니다.");
+
+        deleteRelatedUserData(user);
+
+        usersRepository.delete(user);
+        log.info("관리자: 유저({}) 완전 삭제 완료.", userHashId);
+    }
+
+    // 사용자와 연관된 모든 데이터를 삭제하는 헬퍼 메서드
+    private void deleteRelatedUserData(Users user) {
+        teamMemberRepository.deleteAllByUser(user);
+        commentRepository.deleteAllByUser(user);
+        boardRepository.deleteAllByUser(user);
+        chattingMemberRepository.deleteAllByUser(user);
+        notificationRepository.deleteAllByReceiverUser(user);
+        notificationRepository.deleteAllBySenderUser(user);
+        fileRepository.deleteAllByUserHashId(user);
+        teamInvitationRepository.deleteAllByUser(user);
     }
 
     // 자기 정보 조회
@@ -256,7 +322,7 @@ public class UsersService {
         );
     }
 
-    // 전체 유저 조회 (관리자 등)
+    // 전체 유저 조회
     public List<UserInfoResponseDto> getAllUsers() {
         return usersRepository.findAll().stream()
                 .map(this::convertToDto)
@@ -299,7 +365,7 @@ public class UsersService {
         usersRepository.save(user);
     }
 
-
+    // 관리자 페이지용 사용자 목록 조회 (페이징 및 필터링)
     public Page<UserInfoResponseDto> getUsersWithPagingAndFilter(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
@@ -310,7 +376,6 @@ public class UsersService {
         } else {
             usersPage = usersRepository.findByNameContainingIgnoreCase(keyword, pageable);
         }
-        log.info("조회된 유저 수: {}", usersPage.getNumberOfElements());
 
         return usersPage.map(this::convertToDto);
     }

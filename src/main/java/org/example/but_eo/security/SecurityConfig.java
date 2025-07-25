@@ -79,11 +79,12 @@ public class SecurityConfig {
 
         //TODO : 여기 안에 프론트 엔드 주소 넣어야함
         //config.setAllowedOrigins(List.of("")); //허용할 도메인
+
         config.setAllowedOrigins(List.of("http://localhost:5173", "13.125.250.158:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH")); //허용할 HTTP 메소드
         config.setAllowedHeaders(List.of("Authorization", "Content-Type")); //허용할 헤더
         config.setAllowCredentials(true); //인증 정보 포함 허용
-
+        //수정
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
