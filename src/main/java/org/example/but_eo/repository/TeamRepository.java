@@ -35,4 +35,7 @@ public interface TeamRepository extends JpaRepository<Team, String> {
       AND t.event = :sportType
     """)
     String findTeamIdByUserIdAndSportType(@Param("userId") String userId, @Param("sportType") String sportType);
+
+    @Query(value = "SELECT * FROM Team WHERE teamId = :teamA OR teamId = :teamB", nativeQuery = true)
+    List<Team> findMatchedTeams(@Param("teamA") String teamA, @Param("teamB") String teamB);
 }

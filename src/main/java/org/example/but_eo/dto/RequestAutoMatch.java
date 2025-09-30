@@ -1,11 +1,13 @@
 package org.example.but_eo.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class RequestAutoMatch {
     private String teamId;
-    private String userId;
     private String sportType;
     private String region;
+    private int rating;
 }

@@ -815,13 +815,14 @@
             return response;
         }
 
-        public boolean requestAutoMatch(String userId, RequestAutoMatch requestAutoMatch) {
-            String teamId = teamRepository.findTeamIdByUserIdAndSportType(userId, requestAutoMatch.getSportType());
-            if (teamId == null) {
+        public boolean requestAutoMatch(RequestAutoMatch requestAutoMatch) {
+            Optional<Team> team = teamRepository.findById(requestAutoMatch.getTeamId());
+            if (team.isEmpty()) {
                 return false;
             }
-            requestAutoMatch.setTeamId(teamId);
-            requestAutoMatch.setUserId(userId);
+            requestAutoMatch.setSportType(team.get().getEvent().toString());
+            requestAutoMatch.setRegion(team.get().getRegion());
+            requestAutoMatch.setRating(team.get().getRating());
 
             matchQueue.enqueue(requestAutoMatch);
             return true;
