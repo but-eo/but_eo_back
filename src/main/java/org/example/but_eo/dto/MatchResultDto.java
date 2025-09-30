@@ -1,10 +1,12 @@
 package org.example.but_eo.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.example.but_eo.entity.Matching;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 public class MatchResultDto {
     private String matchId;

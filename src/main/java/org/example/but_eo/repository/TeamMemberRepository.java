@@ -46,4 +46,10 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, TeamMemb
             Team.Event event
     );
 
+    @Query("SELECT tm.user FROM TeamMember tm WHERE tm.team.teamId = :teamId AND tm.type = 'LEADER'")
+    Optional<Users> findLeaderByTeamId(@Param("teamId") String teamId);
+
+
+    @Query(value = "SELECT * FROM Team WHERE teamId = :teamA OR teamId = :teamB", nativeQuery = true)
+    List<Team> findMatchedTeams(@Param("teamA") String teamA, @Param("teamB") String teamB);
 }

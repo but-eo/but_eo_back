@@ -186,8 +186,7 @@ public class MatchingController {
 
     @PostMapping("/auto")
     public ResponseEntity<?> requestAutoMatch(@RequestBody RequestAutoMatch requestAutoMatch, Authentication authentication) {
-        String userId = authentication.getPrincipal().toString();
-        if(matchingService.requestAutoMatch(userId, requestAutoMatch)) {
+        if(matchingService.requestAutoMatch(requestAutoMatch)) {
             return ResponseEntity.ok("매칭 요청 완료");
         } else {
             log.warn("매칭 요청 실패");

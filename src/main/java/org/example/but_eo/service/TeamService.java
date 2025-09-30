@@ -14,9 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -268,4 +266,21 @@ public class TeamService {
                 .collect(Collectors.toList());
     }
 
+    public List<Team> getMatchedTeams(String teamA, String teamB) {
+        return teamMemberRepository.findMatchedTeams(teamA, teamB);
+    }
+
+    public String getLeaderHashId(String teamId) {
+        Optional<Users> leader = teamMemberRepository.findLeaderByTeamId(teamId);
+        if (leader.isPresent()) {
+            return leader.get().getUserHashId();
+        } else {
+            return "NONE";
+        }
+    }
+
+    public Team getTeam(String teamId) {
+        Optional<Team> team = teamRepository.findById(teamId);
+        return team.orElse(null);
+    }
 }
